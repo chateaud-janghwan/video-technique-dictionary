@@ -1,0 +1,1615 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="카메라 무빙, 샷 구도, 다이나믹 편집, 장면 전환을 3D 미리보기와 복사용 프롬프트로 보는 촬영·편집 기법 사전">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>영상 기법 도감</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: left library sidebar (sticky) + main card dictionary; every card carries a live preview and a copyable prompt; a detail sheet opens the program monitor, timeline and camera diagram. */
+:root{
+  --bg:#F2F4F8; --panel:#FFFFFF; --card:#FFFFFF; --ink:#141821; --muted:#596171; --faint:#848B9A; --line:#E1E5EC; --soft:#EEF1F6;
+  --accent:#E0402D; --accent-ink:#FFFFFF; --ok:#2E9E62; --tally:#E0402D;
+  --bezel:#101217; --bezel-2:#1A1D24; --bezel-line:#2A2E38; --bezel-ink:#C9CED8; --bezel-dim:#7C8496;
+  --clip-a:#3D78C4; --clip-b:#C7892B; --clip-g:#7F5BC4; --audio-a:#2B5C94; --audio-b:#94661F; --music:#2F7F55; --fx:#E6E2F2; --kf:#F0C24B;
+  --font-display:"Black Han Sans","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#0E1015;--panel:#13161C;--card:#171A21;--ink:#E8EAEF;--muted:#A0A7B4;--faint:#727a89;--line:#262B35;--soft:#1D212A;--accent:#FF5A45;--ok:#4CC383;--tally:#FF5A45;--bezel:#08090C;--bezel-2:#14161C;--bezel-line:#262A33;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#0E1015;--panel:#13161C;--card:#171A21;--ink:#E8EAEF;--muted:#A0A7B4;--faint:#727a89;--line:#262B35;--soft:#1D212A;--accent:#FF5A45;--ok:#4CC383;--tally:#FF5A45;--bezel:#08090C;--bezel-2:#14161C;--bezel-line:#262A33;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--panel)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.i{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+.app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100%}
+.side{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;height:calc(100vh - env(safe-area-inset-top,0px));overflow-y:auto;padding-block:22px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;border-right:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;align-items:center;gap:10px;margin:0 6px 26px}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center;flex:none}
+.logo svg{width:13px;height:13px;fill:#fff}
+.brand b{font-family:var(--font-display);font-weight:400;font-size:19px;letter-spacing:.01em;white-space:nowrap}
+.side-label{font:600 10.5px var(--font-mono);letter-spacing:.14em;color:var(--faint);margin:0 8px 8px;text-transform:uppercase}
+.lib{display:flex;justify-content:space-between;align-items:center;width:100%;padding:11px 14px;border-radius:10px;border:0;background:transparent;font-weight:700;cursor:pointer;margin-bottom:4px;font-size:14.5px}
+.lib span{font:600 12px var(--font-mono);opacity:.8}
+.lib:hover{background:var(--soft)}
+.lib[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:0 8px 18px -10px var(--accent)}
+.side hr{border:0;border-top:1px solid var(--line);margin:18px 6px}
+.catnav{display:grid;gap:2px}
+.catnav button{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:4px;width:100%;text-align:left;padding:9px 10px;border-radius:8px;border:0;background:transparent;font-size:13.5px;color:var(--muted);cursor:pointer}
+.catnav button .no,.catnav button .n{font:500 11px var(--font-mono);color:var(--faint)}
+.catnav button:hover{background:var(--soft);color:var(--ink)}
+.catnav button.on{background:var(--soft);color:var(--ink);font-weight:700}
+.catnav button.on .no{color:var(--accent)}
+.side-note{margin:18px 8px 0;font-size:12px;color:var(--faint);line-height:1.6}
+
+.main{min-width:0;padding-block:34px 72px;padding-left:36px;padding-right:max(16px,env(safe-area-inset-right,0px))}
+.main-in{max-width:1180px}
+.eyebrow{font:600 11px var(--font-mono);letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
+.hero h1{margin:8px 0 6px;font-size:clamp(28px,3.6vw,38px);line-height:1.2;letter-spacing:-.02em;text-wrap:balance}
+.hero p{margin:0;color:var(--muted);max-width:60ch}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:20px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.search{position:relative;flex:1 1 240px;max-width:380px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--faint)}
+.search input{width:100%;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:0 12px 0 36px;font:inherit;font-size:14px}
+.seg{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--panel)}
+.seg .lbl{font-size:12px;color:var(--faint);padding:0 8px 0 10px}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:999px;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:700}
+.hint{font-size:12.5px;color:var(--faint);flex-basis:100%;margin:0}
+
+.cat{margin-top:40px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 16px)}
+.cat-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cat-h h3{margin:0;font-size:19px}
+.cat-count{font:500 12px var(--font-mono);color:var(--faint)}
+.cat-en{margin-left:auto;font:600 11px var(--font-mono);letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+.cat-note{margin:6px 0 16px;font-size:13.5px;color:var(--muted);max-width:72ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:18px}
+.grid.combo{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;display:flex;flex-direction:column;min-width:0}
+.card-head{display:flex;justify-content:space-between;gap:8px;font:600 10.5px var(--font-mono);letter-spacing:.08em;color:var(--faint);text-transform:uppercase}
+.card-head span:last-child{font-family:var(--font-body);letter-spacing:0;font-weight:500;font-size:11.5px;text-transform:none;text-align:right}
+.parts{margin:10px 0 0;font-size:12.5px;font-weight:700;color:var(--accent)}
+.card h4{margin:8px 0 0;font-size:19px;line-height:1.3;letter-spacing:-.01em}
+.card .en{margin:1px 0 10px;font:500 12px var(--font-mono);color:var(--faint)}
+.sum{font-weight:700;margin:0 0 3px;font-size:14.5px}
+.desc{color:var(--muted);font-size:13.5px;margin:0;line-height:1.6}
+.opp{font-size:12.5px;color:var(--faint);margin:8px 0 0}
+.pv{margin-top:14px;border-radius:12px;overflow:hidden;background:var(--soft);border:1px solid var(--line)}
+.pv canvas{display:block;width:100%;aspect-ratio:16/9;max-width:100%;background:#0C0E13;cursor:zoom-in}
+.pv-bar{display:flex;align-items:center;gap:4px;padding:6px 8px}
+.pv-bar .meta{margin-left:auto;margin-right:4px;font:500 11.5px var(--font-mono);color:var(--faint);white-space:nowrap}
+.pv-btn{border:0;background:transparent;font-weight:700;font-size:12.5px;display:inline-flex;gap:6px;align-items:center;padding:5px 7px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.pv-btn:hover{background:var(--panel)}
+.pv-btn .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.pv-btn[aria-pressed="false"] .dot{background:var(--faint)}
+.pr{margin-top:14px}
+.pr-head{display:flex;justify-content:space-between;align-items:center;font:600 10.5px var(--font-mono);letter-spacing:.12em;color:var(--faint)}
+.copy{border:0;background:transparent;color:var(--accent);font:700 12.5px var(--font-body);display:inline-flex;gap:5px;align-items:center;cursor:pointer;padding:4px 6px;border-radius:6px;letter-spacing:0}
+.copy:hover{background:var(--soft)}
+.copy.done{color:var(--ok)}
+.pr-text{margin:6px 0 0;font-size:13.5px;line-height:1.7}
+.empty{margin-top:40px;color:var(--muted)}
+.foot{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--faint);max-width:80ch}
+
+/* ---------- detail sheet ---------- */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(8,10,14,.6);display:grid;place-items:center;padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow:auto}
+.sheet{background:var(--panel);color:var(--ink);border-radius:18px;max-width:1200px;width:100%;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:26px;padding:20px;position:relative;box-shadow:0 30px 80px -30px rgba(0,0,0,.6)}
+.x{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel);cursor:pointer;display:grid;place-items:center;z-index:2}
+.x svg{width:16px;height:16px}
+.device{background:var(--bezel);border-radius:12px;padding:8px}
+.mon-bar{display:flex;align-items:center;gap:10px;padding:2px 4px 8px;font-family:var(--font-mono);font-size:11px;color:var(--bezel-dim);letter-spacing:.06em;min-width:0}
+.tally{width:8px;height:8px;border-radius:50%;background:#3A3F4B;flex:none}
+.tally.on{background:var(--tally);box-shadow:0 0 0 3px rgba(224,64,45,.22)}
+.mon-name{color:var(--bezel-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.tc{font-variant-numeric:tabular-nums;color:var(--bezel-ink);white-space:nowrap}
+.tc em{font-style:normal;color:var(--bezel-dim)}
+canvas#screen{display:block;width:100%;aspect-ratio:16/9;max-width:100%;background:#000;border-radius:4px}
+.tl{display:grid;grid-template-columns:26px minmax(0,1fr);gap:0 6px;padding:10px 4px 4px;user-select:none;-webkit-user-select:none}
+.tl-labels,.tl-lanes{display:grid;grid-template-rows:14px 16px 16px 16px;gap:4px}
+.tl-labels span{font-family:var(--font-mono);font-size:10px;color:var(--bezel-dim);line-height:16px}
+.tl-lanes{position:relative;cursor:ew-resize;touch-action:none;border-radius:3px}
+.ruler{position:relative;border-bottom:1px solid var(--bezel-line)}
+.tick{position:absolute;bottom:0;height:5px;border-left:1px solid var(--bezel-line)}
+.tick b{position:absolute;bottom:3px;left:3px;font:500 9px var(--font-mono);color:var(--bezel-dim)}
+.lane{position:relative;background:var(--bezel-2);border-radius:3px}
+.clip{position:absolute;top:0;bottom:0;border-radius:3px;font:500 10px/16px var(--font-mono);color:#fff;padding:0 5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:inset 0 0 0 1px rgba(0,0,0,.28)}
+.k-a{background:var(--clip-a)} .k-b{background:var(--clip-b)} .k-g{background:var(--clip-g)}
+.k-aa,.k-ab,.k-am{background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.16) 0 1px,transparent 1px 3px)}
+.k-aa{background-color:var(--audio-a)} .k-ab{background-color:var(--audio-b)} .k-am{background-color:var(--music)}
+.fx{position:absolute;top:-2px;bottom:-2px;background:var(--fx);color:#1A1530;border-radius:3px;font:600 9.5px/20px var(--font-body);text-align:center;overflow:hidden;white-space:nowrap;z-index:2;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.kf{position:absolute;top:50%;width:8px;height:8px;background:var(--kf);transform:translate(-50%,-50%) rotate(45deg);z-index:3;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+.cutmark{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:#fff;z-index:3}
+.beat{position:absolute;top:-3px;bottom:-3px;width:1px;background:rgba(255,255,255,.8);z-index:3}
+.ph{position:absolute;top:0;bottom:-2px;width:2px;margin-left:-1px;background:var(--tally);z-index:6;pointer-events:none}
+.ph::before{content:"";position:absolute;top:0;left:-4px;border:5px solid transparent;border-top:7px solid var(--tally)}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+.ctl{height:36px;min-width:36px;padding:0 12px;border:1px solid var(--line);background:var(--panel);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px}
+.ctl:hover{border-color:var(--ink)}
+.ctl svg{width:15px;height:15px;fill:currentColor;flex:none}
+.ctl.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);min-width:88px}
+.ctl[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.spacer{flex:1}
+.info{min-width:0;padding-top:6px;padding-right:52px}
+.info .card-head{margin-bottom:6px}
+.info h2{margin:4px 0 0;font-size:26px;line-height:1.25;letter-spacing:-.01em}
+.info .en{margin:2px 0 12px;font:500 13px var(--font-mono);color:var(--faint)}
+.info p{margin:0 0 10px;max-width:60ch}
+.info .use{color:var(--muted);font-size:14px}
+.info .use b{color:var(--ink);margin-right:6px}
+.info .pr{margin-top:18px;padding:14px 16px;border-radius:12px;background:var(--soft);border:1px solid var(--line)}
+.info .seg{margin-top:12px}
+
+@media (max-width:899px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;height:auto;display:flex;gap:6px;align-items:center;overflow-x:auto;padding-block:10px;padding-right:max(16px,env(safe-area-inset-right,0px));border-right:0;border-bottom:1px solid var(--line);scrollbar-width:none}
+  .side::-webkit-scrollbar{display:none}
+  .brand{margin:0 6px 0 0;flex:none}
+  .brand b{display:none}
+  .side-label,.side-note,.side hr{display:none}
+  .lib{flex:none;width:auto;margin:0;padding:8px 12px;gap:8px;font-size:13.5px}
+  .catnav{display:flex;gap:4px}
+  .catnav button{display:flex;flex:none;width:auto;white-space:nowrap;padding:8px 10px;gap:6px}
+  .catnav button .no{display:none}
+  .main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-block:24px 56px}
+  .cat{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 64px)}
+  .sheet{grid-template-columns:minmax(0,1fr);padding:14px;gap:16px}
+  .info{padding-right:0}
+  .ctl .lbl{display:none}
+  .ctl.primary{min-width:48px}
+}
+@media (max-width:480px){
+  .grid,.grid.combo{grid-template-columns:minmax(0,1fr)}
+  .hero h1{font-size:26px}
+}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <aside class="side" aria-label="라이브러리">
+    <div class="brand"><span class="logo"><svg viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z"/></svg></span><b>영상 기법 도감</b></div>
+    <p class="side-label">Library</p>
+    <button class="lib" id="libDict" type="button" aria-pressed="true">효과 사전 <span id="nDict"></span></button>
+    <button class="lib" id="libCombo" type="button" aria-pressed="false">추천 조합 <span id="nCombo"></span></button>
+    <hr>
+    <p class="side-label">Categories</p>
+    <nav class="catnav" id="catNav"></nav>
+    <p class="side-note">카드 미리보기는 화면에 보이는 것만 재생돼서 가볍게 돌아가요. 미리보기를 누르면 타임라인과 카메라 도식이 있는 큰 화면이 열립니다.</p>
+  </aside>
+
+  <main class="main">
+    <div class="main-in">
+      <header class="hero">
+        <span class="eyebrow">Shot &amp; Edit Dictionary</span>
+        <h1>움직임으로 보는 촬영·편집 사전.</h1>
+        <p>카드마다 실제 움직임이 재생돼요. 마음에 드는 기법은 프롬프트를 복사해서 AI 영상 생성 도구나 편집 요청에 바로 붙여 넣으세요.</p>
+        <div class="toolbar">
+          <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="기법 이름으로 찾기 (예: 오빗, dolly, 전환)" aria-label="기법 찾기"></label>
+          <div class="seg" role="group" aria-label="프롬프트 언어"><span class="lbl">프롬프트</span><button type="button" data-lang="ko" aria-pressed="true">한국어</button><button type="button" data-lang="en" aria-pressed="false">English</button></div>
+          <p class="hint">AI 영상 생성 도구(카메라 무빙)는 영어 프롬프트가 더 잘 통하는 경우가 많아요. 전환·편집 프롬프트는 편집 요청용으로 썼어요.</p>
+        </div>
+      </header>
+      <div id="catalog"></div>
+      <p class="empty" id="empty" hidden>찾는 기법이 없어요. 다른 이름이나 영어 용어로 검색해 보세요.</p>
+      <footer class="foot">예시 장면은 브라우저에서 실시간으로 렌더링한 3D예요. 장면 A는 낮의 들판, 장면 B는 밤의 도시입니다. 큰 화면의 도식은 피사체(빨간 점)를 기준으로 카메라가 어디서 어떻게 움직이는지 보여줘요. 단축키(큰 화면): Space 재생/정지 · ←/→ 이전/다음 · R 처음부터 · Esc 닫기</footer>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="iKo">
+    <button class="x" id="mClose" type="button" aria-label="닫기"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div>
+      <div class="device">
+        <div class="mon-bar"><span class="tally" id="tally"></span><span class="mon-name" id="monName">PROGRAM</span><span class="tc" id="tc">00:00:00:00</span></div>
+        <canvas id="screen" role="img" aria-label="기법 예시 영상"></canvas>
+        <div class="tl">
+          <div class="tl-labels" aria-hidden="true"><span></span><span>V2</span><span>V1</span><span>A1</span></div>
+          <div class="tl-lanes" id="lanes" tabindex="0" role="slider" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="ruler" id="ruler"></div><div class="lane" id="lane-v2"></div><div class="lane" id="lane-v1"></div><div class="lane" id="lane-a1"></div><div class="ph" id="ph"></div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="ctl" id="prev" type="button" aria-label="이전 기법"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM14 2v12L6 8z"/></svg></button>
+        <button class="ctl primary" id="play" type="button"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span class="lbl" id="playLbl">재생</span></button>
+        <button class="ctl" id="replay" type="button" aria-label="처음부터"><svg viewBox="0 0 16 16"><path d="M8 2a6 6 0 1 1-5.6 8.1l1.9-.7A4 4 0 1 0 8 4v2.5L4.2 3.2 8 0z"/></svg><span class="lbl">처음부터</span></button>
+        <button class="ctl" id="next" type="button" aria-label="다음 기법"><svg viewBox="0 0 16 16"><path d="M11 2h2v12h-2zM2 2v12l8-6z"/></svg></button>
+        <span class="spacer"></span>
+        <button class="ctl" id="diagBtn" type="button" aria-pressed="true" aria-label="카메라 도식"><svg viewBox="0 0 16 16"><path d="M1 5h8v6H1zM10 7l5-3v8l-5-3z"/></svg><span class="lbl">도식</span></button>
+        <button class="ctl" id="loop" type="button" aria-pressed="true" aria-label="반복"><svg viewBox="0 0 16 16"><path d="M4 5h7V3l3 3-3 3V7H4a1 1 0 0 0-1 1v1H1V8a3 3 0 0 1 3-3zm8 6H5v2l-3-3 3-3v2h7a1 1 0 0 0 1-1V7h2v1a3 3 0 0 1-3 3z"/></svg><span class="lbl">반복</span></button>
+        <button class="ctl" id="slow" type="button" aria-pressed="false"><span>0.5×</span><span class="lbl">느리게</span></button>
+      </div>
+    </div>
+    <div class="info" aria-live="polite">
+      <div class="card-head"><span id="iNo"></span><span id="iTags"></span></div>
+      <p class="parts" id="iParts" hidden></p>
+      <h2 id="iKo"></h2>
+      <p class="en" id="iEn"></p>
+      <p class="sum" id="iSum"></p>
+      <p class="desc" id="iDesc"></p>
+      <p class="opp" id="iOpp" hidden></p>
+      <p class="use"><b>언제 쓰나요</b><span id="iUse"></span></p>
+      <div class="pr"><div class="pr-head"><span>PROMPT EXAMPLE</span><button type="button" class="copy" id="mCopy"></button></div><p class="pr-text" id="mPrompt"></p></div>
+      <div class="seg" role="group" aria-label="프롬프트 언어"><span class="lbl">프롬프트</span><button type="button" data-lang="ko" aria-pressed="true">한국어</button><button type="button" data-lang="en" aria-pressed="false">English</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+"use strict";
+/* ================= math ================= */
+const W=640,H=360,TAU=Math.PI*2,D2R=Math.PI/180;
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const seg=(t,a,b)=>clamp((t-a)/(b-a));
+const eIO=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+const eIn=p=>p*p*p;
+const eOut=p=>1-Math.pow(1-p,3);
+const eBack=p=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2);};
+const eBounce=x=>{const n=7.5625,d=2.75;if(x<1/d)return n*x*x;if(x<2/d)return n*(x-=1.5/d)*x+.75;if(x<2.5/d)return n*(x-=2.25/d)*x+.9375;return n*(x-=2.625/d)*x+.984375;};
+const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);};
+const wrap=(v,a,b)=>{const r=b-a;return a+(((v-a)%r)+r)%r;};
+const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const mixc=(a,b,t)=>{const A=hex(a),B=hex(b);return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')})`;};
+const lerp3=(a,b,p)=>[lerp(a[0],b[0],p),lerp(a[1],b[1],p),lerp(a[2],b[2],p)];
+const $=id=>document.getElementById(id);
+const reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const canFilter=(()=>{try{const t=document.createElement('canvas').getContext('2d');return typeof t.filter==='string';}catch(e){return false;}})();
+const KR='"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+const MONO='"IBM Plex Mono","IBM Plex Sans KR",ui-monospace,monospace';
+const CLR={a:'#3D78C4',b:'#C7892B',red:'#E0533D',blue:'#3D9BE0',gold:'#F0B43C',green:'#4FB37A'};
+
+/* ================= render targets (main monitor + card thumbnails share the drawing code) ================= */
+const mk=()=>{const c=document.createElement('canvas');return [c,c.getContext('2d')];};
+const cv=$('screen');
+let ctx,SF=1,bufA,ca,bufB,cb,bufC,cc,R3=null,THUMB=false;
+function makeTarget(c2d,thumb){const [a,ac]=mk(),[b,bc]=mk(),[c,c3]=mk();return {ctx:c2d,SF:1,bufA:a,ca:ac,bufB:b,cb:bc,bufC:c,cc:c3,R:null,thumb};}
+function useTarget(tg){ctx=tg.ctx;SF=tg.SF;bufA=tg.bufA;ca=tg.ca;bufB=tg.bufB;cb=tg.cb;bufC=tg.bufC;cc=tg.cc;R3=tg.R;THUMB=tg.thumb;}
+function sizeTarget(tg,px){tg.SF=px/W;const h=Math.round(H*tg.SF);for(const c of [tg.bufA,tg.bufB,tg.bufC])if(c.width!==px||c.height!==h){c.width=px;c.height=h;}}
+const MAIN=makeTarget(cv.getContext('2d'),false);
+const TH=makeTarget(null,true);
+const TW=320;sizeTarget(TH,TW);
+
+function rr(c,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function circ(c,x,y,r){c.moveTo(x+r,y);c.arc(x,y,r,0,TAU);}
+function reset(c){c.globalAlpha=1;c.globalCompositeOperation='source-over';if(canFilter)c.filter='none';}
+function begin(c){c.setTransform(SF,0,0,SF,0,0);reset(c);c.fillStyle='#000';c.fillRect(0,0,W,H);}
+
+/* ================= 3D world (three.js) ================= */
+const T3=window.THREE;
+let has3D=false,cam3=null,camTmp=null,SA=null,SB=null,SUNV=null,GLOW=null;
+const KR3=.0017,MR=.0163,P0=-Math.atan2(.45,8.5),BPOS=[0,1.45,8.5],BL=[0,1,0];
+const FWD=[0,-.45,-8.5];
+const fovZ=z=>2*Math.atan(Math.tan(19*D2R)/z)/D2R;
+const along=p=>({pos:p,look:[p[0]+FWD[0],p[1]+FWD[1],p[2]+FWD[2]]});
+const aim=(pos,yaw,pitch,fov=38)=>({pos,look:[pos[0]+10*Math.sin(yaw)*Math.cos(pitch),pos[1]+10*Math.sin(pitch),pos[2]-10*Math.cos(yaw)*Math.cos(pitch)],fov});
+const orb=(az,el,d,look=[0,1.05,0],fov=38)=>({pos:[look[0]+d*Math.sin(az)*Math.cos(el),look[1]+d*Math.sin(el),look[2]+d*Math.cos(az)*Math.cos(el)],look,fov});
+const mixSpec=(a,b,p)=>({pos:lerp3(a.pos,b.pos,p),look:lerp3(a.look||BL,b.look||BL,p),fov:lerp(a.fov||38,b.fov||38,p)});
+
+function applyCam(sp,cm){
+  cm.up.set(0,1,0);
+  if(sp.pos){
+    cm.position.set(sp.pos[0],sp.pos[1],sp.pos[2]);
+    if(sp.up)cm.up.set(sp.up[0],sp.up[1],sp.up[2]);
+    const l=sp.look||BL;cm.lookAt(l[0],l[1],l[2]);
+    if(sp.rot){cm.rotateY(sp.rot[0]);cm.rotateX(sp.rot[1]);cm.rotateZ(sp.rot[2]);}
+    if(sp.roll)cm.rotateZ(sp.roll);
+    cm.fov=sp.fov||38;
+  }else{
+    cm.position.set(BPOS[0]+(sp.x||0)*MR,BPOS[1]+(sp.y||0)*MR,BPOS[2]-(sp.z||0)*4.25);
+    cm.rotation.set(P0+(sp.tilt||0)*KR3,-(sp.pan||0)*KR3,sp.roll||0,'YXZ');
+    cm.fov=fovZ(sp.zoom||1);
+  }
+  cm.aspect=16/9;cm.updateProjectionMatrix();cm.updateMatrixWorld(true);
+}
+
+function initThree(){
+  const mkR=()=>{const r=new T3.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true,powerPreference:'high-performance'});
+    r.setPixelRatio(1);r.outputEncoding=T3.sRGBEncoding;r.toneMapping=T3.ACESFilmicToneMapping;r.toneMappingExposure=1.05;
+    r.shadowMap.enabled=true;r.shadowMap.type=T3.PCFSoftShadowMap;r.setClearColor(0x000000,0);return r;};
+  MAIN.R=mkR();TH.R=mkR();TH.R.setSize(TW,Math.round(TW*9/16),false);
+  cam3=new T3.PerspectiveCamera(38,16/9,.04,1600);camTmp=new T3.PerspectiveCamera(38,16/9,.04,1600);
+  const yaw=-110*KR3,pit=P0+115*KR3;
+  SUNV=new T3.Vector3(-Math.sin(yaw)*Math.cos(pit),Math.sin(pit),-Math.cos(yaw)*Math.cos(pit)).normalize();
+  GLOW=canvasTex(128,128,(g)=>{const gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.18,'rgba(255,255,255,.6)');gr.addColorStop(.5,'rgba(255,255,255,.12)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,128,128);},false);
+  SA=buildA();SB=buildB();
+}
+const LC=h=>new T3.Color(h).convertSRGBToLinear();
+const mat=(h,o={})=>new T3.MeshStandardMaterial(Object.assign({color:LC(h),roughness:.85,metalness:0},o));
+function mesh(geo,m,o={}){const me=new T3.Mesh(geo,m);me.position.set(o.x||0,o.y||0,o.z||0);me.castShadow=o.cast!==false;me.receiveShadow=o.recv!==false;return me;}
+const setLayer=(obj,n)=>obj.traverse(x=>x.layers.set(n));
+function canvasTex(w,h,draw,srgb=true){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new T3.CanvasTexture(c);if(srgb)t.encoding=T3.sRGBEncoding;return t;}
+function glowSprite(col,size,op=1){const s=new T3.Sprite(new T3.SpriteMaterial({map:GLOW,color:LC(col),blending:T3.AdditiveBlending,depthWrite:false,transparent:true,opacity:op,fog:false}));s.scale.set(size,size,1);s.castShadow=false;return s;}
+function makeSky(){
+  const m=new T3.ShaderMaterial({side:T3.BackSide,depthWrite:false,fog:false,
+    uniforms:{top:{value:new T3.Color()},hor:{value:new T3.Color()},bot:{value:new T3.Color()},sunDir:{value:new T3.Vector3(0,1,0)},sunCol:{value:new T3.Color()},disc:{value:.99966},halo:{value:1}},
+    vertexShader:'varying vec3 vDir;void main(){vDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+    fragmentShader:`uniform vec3 top;uniform vec3 hor;uniform vec3 bot;uniform vec3 sunDir;uniform vec3 sunCol;uniform float disc;uniform float halo;varying vec3 vDir;
+void main(){vec3 d=normalize(vDir);float h=d.y;
+vec3 c=h>0.0?mix(hor,top,pow(clamp(h,0.0,1.0),0.5)):mix(hor,bot,clamp(-h*8.0,0.0,1.0));
+float s=dot(d,normalize(sunDir));
+c+=sunCol*(smoothstep(disc,disc+0.00012,s)*8.0+pow(max(s,0.0),220.0)*0.9*halo+pow(max(s,0.0),14.0)*0.22*halo);
+gl_FragColor=vec4(c,1.0);
+#include <tonemapping_fragment>
+#include <encodings_fragment>
+}`});
+  const sky=new T3.Mesh(new T3.SphereGeometry(1000,48,24),m);sky.renderOrder=-10;sky.frustumCulled=false;sky.castShadow=false;sky.receiveShadow=false;return sky;
+}
+function makeStars(n){const g=new T3.BufferGeometry(),p=[];for(let i=0;i<n;i++){const a=rnd(i+3e3)*TAU,y=.04+rnd(i+4e3)*.96,r=Math.sqrt(1-y*y);p.push(Math.cos(a)*r*900,y*900,Math.sin(a)*r*900);}
+  g.setAttribute('position',new T3.Float32BufferAttribute(p,3));return new T3.Points(g,new T3.PointsMaterial({size:1.6,sizeAttenuation:false,color:0xffffff,transparent:true,opacity:1,fog:false,depthWrite:false}));}
+
+function makePerson(c){
+  const g=new T3.Group();
+  const shirt=mat(c.shirt,{roughness:.72}),pants=mat(c.pants,{roughness:.85}),skin=mat('#EDC19A',{roughness:.55}),hair=mat(c.hair||'#2A211C',{roughness:.9}),shoe=mat('#1C1C22',{roughness:.6});
+  const leg=sx=>{const p=new T3.Group();p.position.set(sx,.9,0);p.add(mesh(new T3.CylinderGeometry(.078,.066,.84,14),pants,{y:-.42}));p.add(mesh(new T3.BoxGeometry(.11,.08,.25),shoe,{y:-.86,z:.04}));g.add(p);return p;};
+  const legL=leg(-.1),legR=leg(.1);
+  const torso=mesh(new T3.CylinderGeometry(.2,.16,.64,20),shirt,{y:1.2});torso.scale.z=.68;g.add(torso);
+  const sh=mesh(new T3.SphereGeometry(.2,20,12),shirt,{y:1.5});sh.scale.set(1,.42,.68);g.add(sh);
+  const arm=sx=>{const p=new T3.Group();p.position.set(sx,1.47,0);p.add(mesh(new T3.CylinderGeometry(.058,.05,.6,12),shirt,{y:-.3}));p.add(mesh(new T3.SphereGeometry(.052,12,10),skin,{y:-.63}));g.add(p);return p;};
+  const armL=arm(-.245),armR=arm(.245);
+  g.add(mesh(new T3.CylinderGeometry(.055,.06,.1,12),skin,{y:1.56}));
+  const head=mesh(new T3.SphereGeometry(.13,32,24),skin,{y:1.67});head.scale.set(.92,1.05,.98);g.add(head);
+  const hr=mesh(new T3.SphereGeometry(.137,32,16,0,TAU,0,Math.PI*.55),hair,{y:1.695,z:-.012});hr.scale.set(.95,1.05,1.02);g.add(hr);
+  if(c.face){
+    const wm=mat('#FFFFFF',{roughness:.25}),pm=mat('#1E1712',{roughness:.2}),mm=mat('#A24C3E');
+    for(const ex of [-.045,.045]){g.add(mesh(new T3.SphereGeometry(.022,16,12),wm,{x:ex,y:1.68,z:.108,cast:false}));g.add(mesh(new T3.SphereGeometry(.013,12,10),pm,{x:ex,y:1.68,z:.126,cast:false}));
+      g.add(mesh(new T3.BoxGeometry(.042,.008,.012),hair,{x:ex,y:1.716,z:.116,cast:false}));}
+    g.add(mesh(new T3.BoxGeometry(.046,.009,.012),mm,{y:1.612,z:.121,cast:false}));
+  }
+  return {g,legL,legR,armL,armR};
+}
+function pose(P,st,o){
+  const w=o.walk;let x=o.px||0,z=0,face=0,ph=null;
+  if(w!=null){if(typeof w==='number'){x=w;face=Math.PI/2;}else{x=w.x||0;z=w.z||0;face=w.face||0;}ph=st*7;}
+  const jy=o.jump?.55*Math.max(0,Math.sin(st*Math.PI)):0;
+  P.g.position.set(x,jy,z);P.g.rotation.y=face;
+  const sw=ph==null?0:Math.sin(ph);
+  if(jy>.02){P.armL.rotation.set(0,0,-2.5);P.armR.rotation.set(0,0,2.5);P.legL.rotation.x=.35;P.legR.rotation.x=-.2;}
+  else{P.armL.rotation.set(-sw*.5,0,-.08);P.armR.rotation.set(sw*.5,0,.08);P.legL.rotation.x=sw*.55;P.legR.rotation.x=-sw*.55;}
+}
+
+function buildA(){
+  const sc=new T3.Scene(),sky=makeSky();sc.add(sky);const stars=makeStars(260);sky.add(stars);
+  sc.fog=new T3.Fog(0xffffff,60,560);
+  const hemi=new T3.HemisphereLight(0xffffff,0xffffff,.9);
+  const key=new T3.DirectionalLight(0xffffff,2.2);key.castShadow=true;key.shadow.mapSize.set(2048,2048);
+  const kc=key.shadow.camera;kc.left=-17;kc.right=17;kc.top=17;kc.bottom=-17;kc.near=1;kc.far=150;kc.updateProjectionMatrix();kc.layers.enableAll();
+  key.shadow.bias=-.0004;key.shadow.normalBias=.03;key.shadow.radius=3;
+  const fill=new T3.DirectionalLight(LC('#DCE8FF'),.5);fill.position.set(-8,6,10);
+  [hemi,key,fill].forEach(l=>{l.layers.enableAll();sc.add(l);});sc.add(key.target);
+  // ground + path
+  const gt=canvasTex(256,256,(g)=>{g.fillStyle='#6E9B4C';g.fillRect(0,0,256,256);for(let i=0;i<5200;i++){const v=rnd(i+9e3);g.fillStyle=v>.66?'rgba(150,190,95,.35)':v>.33?'rgba(66,104,46,.35)':'rgba(176,194,112,.25)';g.fillRect(rnd(i)*256,rnd(i+7e3)*256,1.5,3);}});
+  gt.wrapS=gt.wrapT=T3.RepeatWrapping;gt.repeat.set(180,180);gt.anisotropy=8;
+  const ground=mesh(new T3.PlaneGeometry(1200,1200),new T3.MeshStandardMaterial({map:gt,roughness:1}),{cast:false});ground.rotation.x=-Math.PI/2;sc.add(ground);
+  const path=mesh(new T3.PlaneGeometry(1.4,100),mat('#CDB892',{roughness:1}),{z:-40,y:.012,cast:false});path.rotation.x=-Math.PI/2;sc.add(path);
+  // mountains
+  const coneG=new T3.ConeGeometry(1,1,6,1),mm=['#71889C','#7D9387','#6A8296'].map(h=>mat(h,{flatShading:true,roughness:1}));
+  for(let i=0;i<18;i++){const a=lerp(-1.5,1.5,i/17)+(rnd(i+500)-.5)*.15,d=300+rnd(i+510)*140,h=50+rnd(i+520)*90,r=70+rnd(i+530)*70;
+    const m=mesh(coneG,mm[i%3],{x:Math.sin(a)*d,y:h/2,z:-Math.cos(a)*d,cast:false});m.scale.set(r,h,r);m.rotation.y=rnd(i+540)*3;sc.add(m);}
+  // trees
+  const trunkG=new T3.CylinderGeometry(.09,.15,1.7,7),leafG=new T3.IcosahedronGeometry(1,1),TRUNK=mat('#6B4A33'),LEAF=['#3F7F3A','#4C8F3F','#36703A'].map(h=>mat(h,{flatShading:true,roughness:.9}));
+  const tree=(s,seed,cast)=>{const g=new T3.Group();const tr=mesh(trunkG,TRUNK,{y:.85*s,cast});tr.scale.setScalar(s);g.add(tr);
+    for(let i=0;i<3;i++){const r=(.95-.18*i)*s,m=mesh(leafG,LEAF[(i+seed)%3],{x:(rnd(seed+i)-.5)*.5*s,y:(1.9+i*.62)*s,z:(rnd(seed+i+9)-.5)*.5*s,cast});m.scale.setScalar(r);m.rotation.set(rnd(seed+i*3)*3,rnd(seed+i*5)*3,0);g.add(m);}return g;};
+  const hero=tree(1.3,7,true);hero.position.set(-3.4,0,-1.8);setLayer(hero,2);sc.add(hero);
+  for(let i=0;i<80;i++){const side=rnd(i+100)<.5?-1:1,x=side*(5+rnd(i+110)*70),z=12-rnd(i+120)*170;if(Math.hypot(x,z)<6)continue;
+    const t=tree(.8+rnd(i+130)*1.1,i,Math.hypot(x,z)<28);t.position.set(x,0,z);t.rotation.y=rnd(i+140)*6;sc.add(t);}
+  // clouds
+  const clouds=new T3.Group(),cm=new T3.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.35,roughness:1,flatShading:true});
+  for(let i=0;i<10;i++){const c=new T3.Group();for(let j=0;j<4;j++){const p=new T3.Mesh(leafG,cm);p.scale.set(12+rnd(i*9+j)*8,5+rnd(i*7+j)*3,9+rnd(i*5+j)*5);p.position.set(j*11-16,rnd(i*3+j)*4,rnd(i*11+j)*6);c.add(p);}
+    c.userData.x0=-380+i*80+rnd(i+600)*40;c.position.set(c.userData.x0,85+rnd(i+610)*45,-240-rnd(i+620)*150);clouds.add(c);}
+  sc.add(clouds);
+  // subject + ball
+  const P=makePerson({shirt:'#E2533B',pants:'#2E3A55',face:true});setLayer(P.g,2);sc.add(P.g);
+  const ball=mesh(new T3.SphereGeometry(.12,24,16),mat('#FFB72E',{roughness:.4}));setLayer(ball,2);sc.add(ball);
+  // near objects (layer 3)
+  const nearG=new T3.Group();
+  const gm=mat('#2F6B2E'),gm2=mat('#3E8236'),bladeG=new T3.ConeGeometry(.022,1,4);
+  const tuft=(gx,gz,n,seed)=>{const g=new T3.Group();g.position.set(gx,0,gz);for(let i=0;i<n;i++){const b=mesh(bladeG,i%2?gm:gm2,{x:(rnd(seed+i)-.5)*.7,z:(rnd(seed+i+60)-.5)*.5});const h=.3+rnd(seed+i+70)*.35;b.scale.set(1,h,1);b.position.y=h/2;b.rotation.z=(rnd(seed+i+80)-.5)*.5;g.add(b);}return g;};
+  const fl=tuft(-1.15,5.5,14,10);
+  fl.add(mesh(new T3.CylinderGeometry(.012,.016,.56,6),gm,{y:.28}));
+  const pet=mat('#F49CC0',{roughness:.6});for(let i=0;i<6;i++){const a=i/6*TAU,p=mesh(new T3.SphereGeometry(.055,12,8),pet,{x:Math.cos(a)*.06,y:.57,z:Math.sin(a)*.06});p.scale.set(1,.45,1);fl.add(p);}
+  fl.add(mesh(new T3.SphereGeometry(.035,12,8),mat('#FFD34D'),{y:.585}));
+  nearG.add(fl,tuft(1.6,5.8,12,40),tuft(2.2,6.6,10,90));setLayer(nearG,3);sc.add(nearG);
+  const occ=mesh(new T3.CylinderGeometry(.5,.6,14,20),mat('#4A3526',{roughness:1}),{y:7,z:4.2});setLayer(occ,3);sc.add(occ);
+  const ots=makePerson({shirt:'#2B3348',pants:'#1E2433',hair:'#16120F'});ots.g.position.set(-.5,0,2.3);ots.g.rotation.y=Math.PI;setLayer(ots.g,3);sc.add(ots.g);
+  // palettes
+  const PA={day:{top:LC('#3A7ECF'),hor:LC('#D0E2EC'),bot:LC('#8BA374'),sun:LC('#FFE9B8'),hs:LC('#BFD8F0'),hg:LC('#5B7A3A'),key:LC('#FFE7C4'),ki:2.8,hi:.62,fi:.36},
+    dusk:{top:LC('#384A8C'),hor:LC('#F3A06A'),bot:LC('#5E4C3E'),sun:LC('#FF9550'),hs:LC('#F2B48C'),hg:LC('#4B3A2A'),key:LC('#FF9A58'),ki:2,hi:.4,fi:.18},
+    night:{top:LC('#050A1E'),hor:LC('#1A2246'),bot:LC('#0A0D16'),sun:LC('#000000'),hs:LC('#2B3B72'),hg:LC('#0A0C12'),key:LC('#7F95D8'),ki:.3,hi:.3,fi:.05}};
+  const tc={};['top','hor','bot','sun','hs','hg','key'].forEach(k=>tc[k]=new T3.Color());
+  const v1=new T3.Vector3(),v2=new T3.Vector3(),U=sky.material.uniforms;
+  const a0=Math.atan2(SUNV.x,-SUNV.z),e0=Math.asin(SUNV.y);
+  return {scene:sc,sky,ball,hero,near:true,subjPos:new T3.Vector3(0,1,0),flowerPos:new T3.Vector3(-1.15,.45,5.5),otsPos:new T3.Vector3(-.5,1.5,2.3),
+    exposure:o=>o.sil?1:1.08,
+    update(st,o){
+      const tod=o.sil?.44:(o.tod||0),a=tod<.5?PA.day:PA.dusk,b=tod<.5?PA.dusk:PA.night,p=tod<.5?tod*2:(tod-.5)*2;
+      for(const k in tc)tc[k].copy(a[k]).lerp(b[k],p);
+      U.top.value.copy(tc.top);U.hor.value.copy(tc.hor);U.bot.value.copy(tc.bot);U.sunCol.value.copy(tc.sun);U.halo.value=o.sil?1.8:1;
+      sc.fog.color.copy(tc.hor);
+      hemi.color.copy(tc.hs);hemi.groundColor.copy(tc.hg);hemi.intensity=o.sil?.14:lerp(a.hi,b.hi,p);
+      if(o.sunV)v1.copy(o.sunV);else{const e=e0-tod*15*D2R,az=a0-tod*.25;v1.set(Math.sin(az)*Math.cos(e),Math.sin(e),-Math.cos(az)*Math.cos(e));}
+      U.sunDir.value.copy(v1);
+      if(o.sil){v2.copy(v1);v2.y+=.1;v2.normalize();}else{const e=(38-tod*42)*D2R,az=a0+.85;v2.set(Math.sin(az)*Math.cos(e),Math.sin(e),-Math.cos(az)*Math.cos(e));}
+      key.position.copy(v2).multiplyScalar(60);key.color.copy(tc.key);key.intensity=(o.sil?3:lerp(a.ki,b.ki,p))*clamp((v2.y+.02)/.12);
+      fill.intensity=o.sil?0:lerp(a.fi,b.fi,p);
+      stars.material.opacity=clamp((tod-.62)/.3);
+      clouds.children.forEach(c=>{c.position.x=wrap(c.userData.x0+st*(o.cloud||9)*.4,-440,440);});
+      P.g.visible=!o.noPerson;pose(P,st,o);
+      ball.visible=!o.noBall;if(!o.noBall){ball.position.set(wrap(-6+st*1.8,-7,7),.12+Math.abs(Math.sin(st*Math.PI*1.3))*.85,1.6);ball.rotation.z=-st*5;}
+      nearG.visible=!o.noFg&&!o.ots;occ.visible=!!o.occ;ots.g.visible=!!o.ots;
+    }};
+}
+
+function buildB(){
+  const sc=new T3.Scene(),sky=makeSky();sc.add(sky);sky.add(makeStars(700));
+  const U=sky.material.uniforms;U.top.value.copy(LC('#02051A'));U.hor.value.copy(LC('#1B2752'));U.bot.value.copy(LC('#06080E'));U.sunDir.value.copy(SUNV);U.sunCol.value.copy(LC('#E6EEFF'));U.disc.value=.99966;U.halo.value=.55;
+  sc.fog=new T3.Fog(LC('#141C3A'),20,190);
+  const hemi=new T3.HemisphereLight(LC('#3A4E8C'),LC('#0A0C14'),.6);
+  const moon=new T3.DirectionalLight(LC('#A9BCFF'),.6);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);
+  const mc=moon.shadow.camera;mc.left=-24;mc.right=24;mc.top=24;mc.bottom=-24;mc.near=1;mc.far=160;mc.updateProjectionMatrix();mc.layers.enableAll();moon.shadow.bias=-.0005;moon.shadow.normalBias=.03;
+  moon.position.set(SUNV.x,Math.max(SUNV.y,.45),SUNV.z).normalize().multiplyScalar(60);
+  [hemi,moon].forEach(l=>{l.layers.enableAll();sc.add(l);});sc.add(moon.target);
+  const ground=mesh(new T3.PlaneGeometry(800,800),mat('#1C2030',{roughness:.42,metalness:.15}),{cast:false});ground.rotation.x=-Math.PI/2;sc.add(ground);
+  sc.add(mesh(new T3.BoxGeometry(400,.15,3.2),mat('#3A3F51',{roughness:.9}),{y:.075,z:-4}));
+  sc.add(mesh(new T3.BoxGeometry(400,.18,.18),mat('#565C70',{roughness:.7}),{y:.09,z:-2.4}));
+  const dm=mat('#8A856F',{emissive:LC('#D9D2B4'),emissiveIntensity:.25,roughness:.6});
+  for(let x=-80;x<=80;x+=5)sc.add(mesh(new T3.BoxGeometry(2.4,.01,.12),dm,{x,y:.006,z:-.4,cast:false}));
+  // buildings with lit windows
+  const base=canvasTex(128,256,(g)=>{g.fillStyle='#000';g.fillRect(0,0,128,256);for(let r=0;r<16;r++)for(let q=0;q<8;q++){const v=rnd(r*31+q*7+5);if(v>.5){g.globalAlpha=.5+.5*rnd(r*13+q+77);g.fillStyle=v>.93?'#A9C8FF':v>.72?'#FFD99A':'#FFB868';g.fillRect(q*16+4,r*16+4,8,10);}}});
+  const roof=mat('#141826',{roughness:.9}),facades=['#20263A','#262B3D','#1C2234'];
+  [{z:-11,h0:8,h1:22,d0:6,d1:8},{z:-24,h0:14,h1:36,d0:8,d1:12},{z:-44,h0:22,h1:60,d0:10,d1:14}].forEach((row,ri)=>{
+    let x=-95,k=0;while(x<95){const w=6+rnd(ri*100+k)*8,h=lerp(row.h0,row.h1,rnd(ri*100+k+50)),d=lerp(row.d0,row.d1,rnd(ri*100+k+70));
+      const t=base.clone();t.needsUpdate=true;t.wrapS=t.wrapT=T3.RepeatWrapping;t.repeat.set(w/12.8,h/51.2);t.offset.set(rnd(k+ri*7),rnd(k+ri*9));
+      const m=new T3.MeshStandardMaterial({color:LC(facades[k%3]),roughness:.82,metalness:.05,emissive:new T3.Color(1,1,1),emissiveMap:t,emissiveIntensity:1.25});
+      sc.add(mesh(new T3.BoxGeometry(w,h,d),[m,m,roof,roof,m,m],{x:x+w/2,y:h/2,z:row.z-d/2,cast:ri===0}));
+      x+=w+.6+rnd(ri*100+k+90)*1.6;k++;}});
+  // street lamps
+  const pole=mat('#3A3F50',{metalness:.6,roughness:.4}),lampM=mat('#FFE3B0',{emissive:LC('#FFE3B0'),emissiveIntensity:2.2});
+  for(const x of [-10,-2,6,14]){
+    sc.add(mesh(new T3.CylinderGeometry(.06,.08,5.2,8),pole,{x,y:2.6,z:-3.3}));sc.add(mesh(new T3.BoxGeometry(.06,.06,.9),pole,{x,y:5.15,z:-2.9}));
+    sc.add(mesh(new T3.BoxGeometry(.36,.1,.24),lampM,{x,y:5.08,z:-2.5,cast:false}));
+    const pl=new T3.PointLight(LC('#FFC27A'),2.4,18,2);pl.position.set(x,4.9,-2.5);pl.layers.enableAll();sc.add(pl);
+    const gs=glowSprite('#FFC27A',2.8,.9);gs.position.set(x,5.02,-2.5);sc.add(gs);}
+  // car
+  const car=new T3.Group();
+  car.add(mesh(new T3.BoxGeometry(4.2,.62,1.8),mat('#2AA596',{roughness:.28,metalness:.55}),{y:.55}));
+  car.add(mesh(new T3.BoxGeometry(2.3,.58,1.62),mat('#0D141F',{roughness:.08,metalness:.9}),{x:-.25,y:1.12}));
+  const wg=new T3.CylinderGeometry(.34,.34,.25,16),wm=mat('#0F1014',{roughness:.7});
+  for(const wx of [-1.35,1.35])for(const wz of [-.86,.86]){const w=mesh(wg,wm,{x:wx,y:.34,z:wz});w.rotation.x=Math.PI/2;car.add(w);}
+  const hl=mat('#FFF4D6',{emissive:LC('#FFF4D6'),emissiveIntensity:3}),tl=mat('#FF2A2A',{emissive:LC('#FF2A2A'),emissiveIntensity:2.5});
+  for(const z of [-.6,.6]){car.add(mesh(new T3.BoxGeometry(.06,.16,.34),hl,{x:2.11,y:.62,z,cast:false}));const g1=glowSprite('#FFF1CC',1.4);g1.position.set(2.2,.62,z);car.add(g1);
+    car.add(mesh(new T3.BoxGeometry(.06,.14,.3),tl,{x:-2.11,y:.66,z,cast:false}));const g2=glowSprite('#FF3030',.9,.8);g2.position.set(-2.2,.66,z);car.add(g2);}
+  const spot=new T3.SpotLight(LC('#FFF1CC'),4,32,.42,.55,1.4);spot.position.set(2.1,.7,0);spot.target.position.set(12,0,0);spot.layers.enableAll();car.add(spot,spot.target);
+  car.position.z=1;sc.add(car);
+  const carX=st=>wrap(-20+st*3.6,-22,22);
+  return {scene:sc,sky,near:false,carX,exposure:()=>1.15,update(st){car.position.x=carX(st);}};
+}
+
+try{if(T3){initThree();has3D=true;}}catch(e){console.error(e);has3D=false;}
+
+function shot(which,c,spec,st,o){
+  begin(c);
+  if(!has3D){c.fillStyle='#1b1e26';c.fillRect(0,0,W,H);c.font=`600 16px ${KR}`;c.fillStyle='#fff';c.textAlign='center';c.fillText('3D 장면을 불러오지 못했어요',W/2,H/2);c.textAlign='left';return;}
+  const S=which==='A'?SA:SB;S.update(st,o);applyCam(spec,cam3);S.sky.position.copy(cam3.position);R3.toneMappingExposure=S.exposure(o);
+  const dom=R3.domElement,pad=(spec.sx||spec.sy)?.03:0;
+  const draw=b=>{c.save();if(b>.4&&canFilter)c.filter=`blur(${b.toFixed(1)}px)`;c.drawImage(dom,-W*pad+(spec.sx||0),-H*pad+(spec.sy||0),W*(1+2*pad),H*(1+2*pad));c.restore();};
+  if(o.ghost){S.ball.visible=false;S.hero.visible=false;cam3.layers.set(2);R3.render(S.scene,cam3);cam3.layers.enableAll();S.hero.visible=true;c.clearRect(0,0,W,H);draw(0);return;}
+  if(spec.focus!=null&&canFilter&&S.near){
+    const f=spec.focus,bl=d=>Math.abs(1/Math.max(.3,d)-1/f)*30*SF;
+    const dS=cam3.position.distanceTo(S.subjPos),dN=cam3.position.distanceTo(o.ots?S.otsPos:S.flowerPos);
+    cam3.layers.set(0);R3.render(S.scene,cam3);draw(bl(45));
+    cam3.layers.set(2);R3.render(S.scene,cam3);draw(bl(dS));
+    cam3.layers.set(3);R3.render(S.scene,cam3);draw(bl(dN));
+    cam3.layers.enableAll();
+  }else{cam3.layers.enableAll();R3.render(S.scene,cam3);draw(0);}
+  if(!o.noTag)tag(c,which,which==='A'?'낮 · 들판':'밤 · 도시');
+}
+function tag(c,letter,label){
+  c.save();c.setTransform(SF,0,0,SF,0,0);reset(c);
+  c.font=`600 11px ${MONO}`;
+  const txt=`SHOT ${letter}  ${label}`,w=c.measureText(txt).width;
+  c.fillStyle='rgba(6,8,12,.5)';rr(c,10,10,w+30,20,4);c.fill();
+  c.fillStyle=letter==='A'?CLR.a:CLR.b;rr(c,15,15,10,10,2);c.fill();
+  c.fillStyle='#fff';c.textBaseline='middle';c.fillText(txt,31,20.5);
+  c.restore();
+}
+const A=(cam,st,o)=>{shot('A',ca,cam||{},st,o||{});return bufA;};
+const B=(cam,st,o)=>{shot('B',cb,cam||{},st,o||{});return bufB;};
+const A2=(cam,st,o)=>{shot('A',cb,cam||{},st,o||{});return bufB;};
+const B2=(cam,st,o)=>{shot('B',ca,cam||{},st,o||{});return bufA;};
+
+/* ================= compositing on the program monitor ================= */
+function put(buf,a=1){if(a<=0)return;ctx.globalAlpha=Math.min(1,a);ctx.drawImage(buf,0,0,W,H);ctx.globalAlpha=1;}
+function veil(col,a){if(a<=0)return;ctx.globalAlpha=Math.min(1,a);ctx.fillStyle=col;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;}
+function xform(buf,{s=1,r=0,dx=0,dy=0,blur=0,a=1,filter=''}={}){
+  if(a<=0)return;
+  ctx.save();ctx.globalAlpha=Math.min(1,a);
+  if(canFilter){const f=[];if(blur>.3)f.push(`blur(${(blur*SF).toFixed(1)}px)`);if(filter)f.push(filter);if(f.length)ctx.filter=f.join(' ');}
+  ctx.translate(W/2+dx,H/2+dy);ctx.rotate(r);ctx.scale(s,s);ctx.drawImage(buf,-W/2,-H/2,W,H);ctx.restore();
+}
+function smearX(buf,len){
+  if(len<2){put(buf);return;}
+  const N=THUMB?5:9;
+  for(let i=0;i<N;i++){const off=(i/(N-1)-.5)*len;ctx.globalAlpha=1/(i+1);ctx.drawImage(buf,-len/2+off,0,W+len,H);}
+  ctx.globalAlpha=1;
+}
+function badge(txt,row=0,dot){
+  ctx.save();ctx.font=`600 12px ${MONO}`;
+  const w=ctx.measureText(txt).width+(dot?32:20),x=W-12-w,y=12+row*28;
+  ctx.fillStyle='rgba(6,8,12,.62)';rr(ctx,x,y,w,22,11);ctx.fill();
+  if(dot){ctx.fillStyle=dot;ctx.beginPath();circ(ctx,x+13,y+11,4);ctx.fill();}
+  ctx.fillStyle='#fff';ctx.textBaseline='middle';ctx.fillText(txt,x+(dot?24:10),y+11.5);
+  ctx.restore();
+}
+function audioBadge(who,st){
+  ctx.save();
+  const col=who==='A'?CLR.a:CLR.b,label=who==='A'?'소리: 장면 A · 새소리, 바람':'소리: 장면 B · 도시 소음';
+  ctx.font=`600 12px ${KR}`;
+  const tw=ctx.measureText(label).width,w=tw+96,x=W-12-w,y=H-40;
+  ctx.fillStyle='rgba(6,8,12,.7)';rr(ctx,x,y,w,28,14);ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(x+12,y+11);ctx.lineTo(x+16,y+11);ctx.lineTo(x+21,y+7);ctx.lineTo(x+21,y+21);ctx.lineTo(x+16,y+17);ctx.lineTo(x+12,y+17);ctx.closePath();ctx.fill();
+  ctx.fillStyle=col;
+  for(let i=0;i<9;i++){const h=3+Math.abs(Math.sin(st*(who==='A'?5:9)+i*1.7))*14;ctx.fillRect(x+30+i*5,y+14-h/2,3,h);}
+  ctx.fillStyle='#fff';ctx.textBaseline='middle';ctx.fillText(label,x+84,y+14.5);
+  ctx.restore();
+}
+function stage(){
+  ctx.fillStyle='#161920';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.045)';ctx.lineWidth=1;ctx.beginPath();
+  for(let x=0;x<=W;x+=40){ctx.moveTo(x+.5,0);ctx.lineTo(x+.5,H);}for(let y=0;y<=H;y+=40){ctx.moveTo(0,y+.5);ctx.lineTo(W,y+.5);}
+  ctx.stroke();
+}
+function text(s,x,y,{size=14,weight=600,color='#fff',align='left',font=KR,base='alphabetic'}={}){
+  ctx.font=`${weight} ${size}px ${font}`;ctx.fillStyle=color;ctx.textAlign=align;ctx.textBaseline=base;ctx.fillText(s,x,y);ctx.textAlign='left';ctx.textBaseline='alphabetic';
+}
+function halves(bufL,bufR,labL,labR){
+  ctx.save();ctx.beginPath();ctx.rect(0,0,W/2,H);ctx.clip();ctx.drawImage(bufL,-W/4,0,W,H);ctx.restore();
+  ctx.save();ctx.beginPath();ctx.rect(W/2,0,W/2,H);ctx.clip();ctx.drawImage(bufR,W/4,0,W,H);ctx.restore();
+  ctx.fillStyle='#0B0D12';ctx.fillRect(W/2-1.5,0,3,H);
+  [[labL,W/4],[labR,W*3/4]].forEach(([l,x])=>{ctx.font=`700 13px ${KR}`;const w=ctx.measureText(l).width+22;ctx.fillStyle='rgba(6,8,12,.62)';rr(ctx,x-w/2,12,w,24,12);ctx.fill();text(l,x,28.5,{size:13,weight:700,align:'center'});});
+}
+function vignette(a=.5){const g=ctx.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,W*.62);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${a})`);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+
+/* ---------- camera diagram: subject-centred top / side / framing views ---------- */
+let showDiag=true;
+function diag(view,sp,fn,ex={}){
+  if(!showDiag||!has3D||!view||THUMB)return;
+  const bw=136,bh=96,bx=ex.bx??(W-bw-12),by=H-bh-12,dur=ex.dur||4;
+  const pts=[];if(fn)for(let i=0;i<=28;i++){const u=i/28;applyCam(fn(u,u*dur),camTmp);pts.push(camTmp.position.clone());}
+  applyCam(sp,camTmp);const cp=camTmp.position.clone(),dir=new T3.Vector3();camTmp.getWorldDirection(dir);pts.push(cp);
+  const vf=camTmp.fov*D2R/2,hf=Math.atan(Math.tan(vf)*16/9);
+  ctx.save();ctx.fillStyle='rgba(6,8,12,.72)';rr(ctx,bx,by,bw,bh,8);ctx.fill();
+  text(view==='side'?'옆에서 본 모습':view==='crop'?'화면에 담기는 범위':'위에서 본 모습',bx+9,by+15,{size:10,weight:600,color:'#AEB5C2'});
+  ctx.beginPath();ctx.rect(bx+2,by+20,bw-4,bh-22);ctx.clip();
+  const camIcon=(x,y,ang,half,L)=>{ctx.save();ctx.translate(x,y);ctx.rotate(ang);ctx.fillStyle='rgba(240,194,75,.28)';ctx.strokeStyle='rgba(240,194,75,.85)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L*Math.cos(-half),L*Math.sin(-half));ctx.lineTo(L*Math.cos(half),L*Math.sin(half));ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff';rr(ctx,-8,-5,10,10,2);ctx.fill();ctx.fillRect(2,-3,4,6);ctx.restore();};
+  const dashPath=(X,Y)=>{if(pts.length<3)return;ctx.strokeStyle='rgba(255,255,255,.4)';ctx.setLineDash([3,3]);ctx.lineWidth=1;ctx.beginPath();pts.slice(0,-1).forEach((p,i)=>i?ctx.lineTo(X(p),Y(p)):ctx.moveTo(X(p),Y(p)));ctx.stroke();ctx.setLineDash([]);};
+  const subj=ex.subj||{x:0,z:0,face:0};
+  if(view==='top'){
+    const xs=pts.map(p=>p.x).concat([subj.x-1,subj.x+1]),zs=pts.map(p=>p.z).concat([subj.z-1,subj.z+1]);
+    const x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);
+    const s=Math.min(10,(bw-30)/(x1-x0||1),(bh-38)/(z1-z0||1));const ox=bx+bw/2-(x0+x1)/2*s,oy=by+20+(bh-20)/2-(z0+z1)/2*s;
+    const X=p=>ox+p.x*s,Y=p=>oy+p.z*s;
+    if(ex.occ){ctx.fillStyle='#8A6040';ctx.beginPath();circ(ctx,X({x:0}),Y({z:4.2}),Math.max(2.5,.55*s));ctx.fill();}
+    if(ex.flower){ctx.fillStyle='#F49CC0';ctx.beginPath();circ(ctx,X({x:-1.15}),Y({z:5.5}),2.5);ctx.fill();}
+    if(ex.ots){ctx.fillStyle='#6A7389';ctx.beginPath();circ(ctx,X({x:-.5}),Y({z:2.3}),4);ctx.fill();}
+    if(ex.focus!=null){const fp=cp.clone().addScaledVector(dir,ex.focus),n=Math.hypot(dir.x,dir.z)||1,nx=-dir.z/n,nz=dir.x/n;ctx.strokeStyle='#F0C24B';ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(X(fp)-nx*30,Y(fp)-nz*30);ctx.lineTo(X(fp)+nx*30,Y(fp)+nz*30);ctx.stroke();ctx.setLineDash([]);}
+    dashPath(X,Y);
+    const sx=X(subj),sy=Y(subj);ctx.fillStyle='#E2533B';ctx.beginPath();circ(ctx,sx,sy,4.5);ctx.fill();
+    ctx.strokeStyle='#E2533B';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+Math.sin(subj.face||0)*8,sy+Math.cos(subj.face||0)*8);ctx.stroke();
+    if(Math.hypot(dir.x,dir.z)<.3){ctx.strokeStyle='rgba(240,194,75,.85)';ctx.beginPath();ctx.arc(X(cp),Y(cp),12,0,TAU);ctx.stroke();ctx.fillStyle='#fff';rr(ctx,X(cp)-5,Y(cp)-5,10,10,2);ctx.fill();}
+    else camIcon(X(cp),Y(cp),Math.atan2(dir.z,dir.x),hf,32);
+  }else if(view==='side'){
+    const zs=pts.map(p=>p.z).concat([-1,1]),ys=pts.map(p=>p.y).concat([0,2]);
+    const z0=Math.min(...zs),z1=Math.max(...zs),y1=Math.max(...ys);
+    const s=Math.min(12,(bw-30)/(z1-z0||1),(bh-38)/(y1||1));const rx=bx+bw-14,gy=by+bh-10;
+    const X=p=>rx-(p.z-z0)*s,Y=p=>gy-p.y*s;
+    ctx.fillStyle='#4FB37A';ctx.fillRect(bx+4,gy,bw-8,1.5);
+    const px=X({z:subj.z||0}),hh=Math.max(10,1.75*s);
+    ctx.strokeStyle='#E2533B';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(px,gy-hh*.78);ctx.lineTo(px,gy-hh*.42);ctx.moveTo(px,gy-hh*.42);ctx.lineTo(px-2.5,gy);ctx.moveTo(px,gy-hh*.42);ctx.lineTo(px+2.5,gy);ctx.stroke();
+    ctx.fillStyle='#EDC19A';ctx.beginPath();circ(ctx,px,gy-hh*.88,Math.max(2.5,hh*.1));ctx.fill();
+    dashPath(X,Y);
+    ctx.strokeStyle='rgba(255,255,255,.25)';ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(X(cp),Y(cp)+5);ctx.lineTo(X(cp),gy);ctx.stroke();ctx.setLineDash([]);
+    camIcon(X(cp),Y(cp),Math.atan2(-dir.y,-dir.z),vf,32);
+  }else if(view==='crop'){
+    const k=Math.abs(cp.z)/Math.max(.05,-dir.z),cy=cp.y+dir.y*k,cxw=cp.x+dir.x*k,hh=Math.abs(cp.z)*Math.tan(vf),hw=hh*16/9;
+    const sc=(bh-34)/1.9,fx=bx+bw/2,Y=v=>by+bh-8-v*sc,X=v=>fx+v*sc;
+    ctx.fillStyle='#2E3A55';ctx.fillRect(X(-.17),Y(.9),.13*sc,.9*sc);ctx.fillRect(X(.04),Y(.9),.13*sc,.9*sc);
+    ctx.fillStyle='#E2533B';rr(ctx,X(-.2),Y(1.52),.4*sc,.64*sc,3);ctx.fill();
+    ctx.fillStyle='#EDC19A';ctx.beginPath();circ(ctx,X(0),Y(1.67),.13*sc);ctx.fill();
+    const rx0=X(cxw-hw),rx1=X(cxw+hw),ry0=Y(cy+hh),ry1=Y(cy-hh);
+    ctx.fillStyle='rgba(6,8,12,.62)';ctx.beginPath();ctx.rect(bx,by+20,bw,bh-20);ctx.rect(rx0,ry0,rx1-rx0,ry1-ry0);ctx.fill('evenodd');
+    ctx.strokeStyle='#F0C24B';ctx.lineWidth=1.5;ctx.strokeRect(rx0,ry0,rx1-rx0,ry1-ry0);
+  }
+  ctx.restore();
+}
+
+/* ================= timeline helpers ================= */
+const AB=(c,fx,lab,extra={})=>Object.assign({v1:[['A · 들판',0,c,'a'],['B · 도시',c,1,'b']],a1:[['A 소리',0,c,'aa'],['B 소리',c,1,'ab']],fx:fx?[[fx[0],fx[1],lab]]:[],marks:fx?[]:[c]},extra);
+const CAM=(kf,extra={})=>Object.assign({v1:[['A · 들판',0,1,'a']],a1:[['A 소리',0,1,'aa']],kf},extra);
+const GFX=(lab='그래픽',extra={})=>Object.assign({v1:[[lab,0,1,'g']]},extra);
+
+/* ================= the techniques ================= */
+const CATS=[
+  {id:'cam',ko:'카메라 무빙 · 기본',en:'Camera Moves',note:'카메라가 움직이는 기본 방법. 큰 화면 오른쪽 아래 도식에서 피사체(빨간 점)를 기준으로 카메라가 어떻게 움직이는지 함께 보세요.'},
+  {id:'subj',ko:'피사체 중심 무빙',en:'Subject-centric Moves',note:'인물을 중심에 두고 돌고, 따라가고, 앞서가고, 내려다보는 무빙. 같은 인물이라도 카메라 경로에 따라 느낌이 완전히 달라져요.'},
+  {id:'cam2',ko:'응용 무빙 · 장비',en:'Advanced & Rigs',note:'기본 무빙을 조합하거나 짐벌·드론 같은 장비로 만드는 역동적인 숏.'},
+  {id:'dyn',ko:'다이나믹 편집',en:'Dynamic Editing',note:'숏폼, 뮤직비디오, 액션 편집에서 박자와 에너지를 살리는 기법. 타임라인의 흰 눈금은 음악 박자(비트)예요.'},
+  {id:'shot',ko:'샷 크기 · 앵글 · 구도',en:'Shots & Framing',note:'인물을 얼마나 크게, 어느 높이에서, 화면 어디에 담는지에 대한 용어.'},
+  {id:'tr',ko:'장면 전환',en:'Transitions',note:'두 장면을 잇는 방법. 타임라인에서 클립 A(파랑)와 B(주황)가 어떻게 이어지는지 함께 보세요.'},
+  {id:'spd',ko:'속도와 시간',en:'Speed & Time',note:'재생 속도와 시간의 흐름을 바꾸는 기법.'},
+  {id:'mg',ko:'모션 그래픽',en:'Motion Graphics',note:'자막과 도형을 움직일 때 쓰는 기본 용어.'},
+];
+const TECH=[];
+const def=o=>{o.dur=o.dur||4;TECH.push(o);};
+/* camera item: o.cam(t,T) -> camera spec; renders scene, then the diagram */
+function camDef(o){
+  def(Object.assign({tl:CAM(o.kf||[.1,.9])},o,{r:(t,T,dur)=>{
+    const sp=o.cam(t,T),op=typeof o.opt==='function'?o.opt(t,T):(o.opt||{});
+    put((o.scene==='B'?B:A)(sp,(o.st0??2)+T*(o.speed??1),op));
+    if(o.post)o.post(t,T,sp);
+    diag(o.view===undefined?'top':o.view,sp,o.cam,Object.assign({dur},o.dx||{},o.dxf?o.dxf(t,T):{}));
+  }}));
+}
+const P=(t,a=.1,b=.9)=>eIO(seg(t,a,b));
+const inOut=t=>eIO(seg(t,.08,.42))-eIO(seg(t,.58,.92));
+const LB=W/2-148;
+
+/* ---- camera: basic ---- */
+camDef({id:'pan',cat:'cam',ko:'팬',en:'Pan',
+  desc:'카메라 위치는 그대로 두고 좌우로 고개를 돌립니다. 가까운 것과 먼 것이 같은 비율로 흘러가요.',
+  use:'넓은 풍경을 보여줄 때, 걸어가는 인물을 따라 시선을 돌릴 때.',
+  cam:t=>aim(BPOS,lerp(-.45,.45,P(t)),P0)});
+camDef({id:'tilt',cat:'cam',ko:'틸트',en:'Tilt',view:'side',
+  desc:'카메라 위치는 그대로 두고 위아래로 고개를 끄덕이듯 움직입니다.',
+  use:'높은 나무나 건물을 아래에서 위로 훑을 때, 땅에서 하늘로 시선을 옮길 때.',
+  cam:t=>aim(BPOS,0,lerp(-.4,.4,P(t)))});
+camDef({id:'zoom',cat:'cam',ko:'줌 인 / 줌 아웃',en:'Zoom In · Zoom Out',kf:[.08,.42,.58,.92],
+  desc:'카메라는 움직이지 않고 렌즈 화각만 바꿔 확대·축소합니다. 도식의 노란 시야각만 좁아지는 게 보여요.',
+  use:'강조하고 싶은 대상을 키울 때, 예능·다큐의 빠른 줌.',
+  cam:t=>({pos:BPOS,look:BL,fov:fovZ(1+1.5*inOut(t))})});
+camDef({id:'dolly',cat:'cam',ko:'달리 인 / 달리 아웃',en:'Dolly In · Dolly Out',kf:[.08,.42,.58,.92],
+  desc:'카메라 자체가 피사체 쪽으로 다가갔다가 물러납니다. 가까운 것은 훨씬 빨리 커져서 공간감이 살아나요.',
+  use:'인물에게 다가가며 감정에 몰입시킬 때, 공간 안으로 들어가는 느낌.',
+  cam:t=>along([0,1.45,8.5-5*inOut(t)])});
+def({id:'zoom-vs-dolly',cat:'cam',ko:'줌 vs 달리 비교',en:'Zoom vs Dolly',dur:4.4,kf:[.1,.55,.72,.95],
+  tl:CAM([.1,.55,.72,.95],{v2:[['달리',0,1,'a']],v1:[['줌',0,1,'a']]}),
+  desc:'인물 크기가 똑같아지도록 맞춰 두고 비교합니다. 줌은 뒤의 나무와 산까지 같이 커지고, 달리는 배경은 덜 커지는 대신 원근감이 달라져요.',
+  use:'둘 다 다가가는 느낌이지만, 입체감이 필요하면 달리, 빠르고 간편하게는 줌.',
+  r:(t,T,dur)=>{const q=eIO(seg(t,.1,.55))-eIO(seg(t,.72,.95));const zf=u=>({pos:BPOS,look:BL,fov:fovZ(1+(8.5/3.5-1)*(eIO(seg(u,.1,.55))-eIO(seg(u,.72,.95))))}),df=u=>along([0,1.45,8.5-5*(eIO(seg(u,.1,.55))-eIO(seg(u,.72,.95)))]);
+    halves(A(zf(t),2+T,{noTag:1}),A2(df(t),2+T,{noTag:1}),'줌 Zoom','달리 Dolly');diag('top',zf(t),zf,{bx:LB,dur});diag('top',df(t),df,{dur});}});
+camDef({id:'truck',cat:'cam',ko:'트럭 / 트래킹',en:'Truck · Tracking',
+  desc:'카메라가 옆으로 평행 이동합니다. 가까운 풀은 빨리, 먼 산은 천천히 지나가는 패럴랙스(시차)가 생겨요.',
+  use:'걷는 인물 옆을 따라갈 때, 진열된 물건을 옆으로 훑을 때.',
+  cam:t=>along([lerp(-3.5,3.5,P(t)),1.45,8.5])});
+def({id:'pan-vs-truck',cat:'cam',ko:'팬 vs 트럭 비교',en:'Pan vs Truck',dur:4.4,
+  tl:CAM([.1,.9],{v2:[['트럭',0,1,'a']],v1:[['팬',0,1,'a']]}),
+  desc:'둘 다 화면이 옆으로 흐르지만, 팬은 제자리에서 고개만 돌려 모든 게 같이 흐르고, 트럭은 몸이 옆으로 이동해 가까운 것만 휙 지나갑니다.',
+  use:'공간의 입체감을 보여주고 싶으면 트럭, 시선 이동만 필요하면 팬.',
+  r:(t,T,dur)=>{const pf=u=>aim(BPOS,lerp(-.35,.35,P(u)),P0),tf=u=>along([lerp(-3,3,P(u)),1.45,8.5]);
+    halves(A(pf(t),2+T,{noTag:1}),A2(tf(t),2+T,{noTag:1}),'팬 Pan','트럭 Truck');diag('top',pf(t),pf,{bx:LB,dur});diag('top',tf(t),tf,{dur});}});
+camDef({id:'pedestal',cat:'cam',ko:'페데스탈',en:'Pedestal · Boom Up / Down',view:'side',
+  desc:'카메라 각도는 그대로 둔 채 높이만 올리거나 내립니다. 고개만 드는 틸트와 달리 시점 자체가 올라가요.',
+  use:'테이블 위 물건을 위로 올라가며 드러낼 때, 눈높이를 바꿔 다른 느낌을 줄 때.',
+  cam:t=>along([0,lerp(.35,4.2,P(t)),8.5])});
+def({id:'tilt-vs-pedestal',cat:'cam',ko:'틸트 vs 페데스탈 비교',en:'Tilt vs Pedestal',dur:4.4,
+  tl:CAM([.1,.9],{v2:[['페데스탈',0,1,'a']],v1:[['틸트',0,1,'a']]}),
+  desc:'틸트는 제자리에서 고개만 위로 들고, 페데스탈은 카메라 높이가 실제로 올라갑니다. 지평선과 인물의 위치 관계를 비교해 보세요.',
+  use:'하늘을 보여주려면 틸트, 위에서 내려다보는 시점으로 바꾸려면 페데스탈.',
+  r:(t,T,dur)=>{const tf=u=>aim(BPOS,0,lerp(-.3,.3,P(u))),pf=u=>along([0,lerp(.4,4,P(u)),8.5]);
+    halves(A(tf(t),2+T,{noTag:1}),A2(pf(t),2+T,{noTag:1}),'틸트 Tilt','페데스탈 Pedestal');diag('side',tf(t),tf,{bx:LB,dur});diag('side',pf(t),pf,{dur});}});
+camDef({id:'crane',cat:'cam',ko:'크레인 숏',en:'Crane Shot · Jib Shot',view:'side',dur:4.4,
+  desc:'크레인이나 지미집에 실린 카메라가 높이 솟아오르며 피사체와 주변을 내려다봅니다.',
+  use:'오프닝이나 엔딩의 웅장한 와이드, 장소 전체를 소개할 때.',
+  cam:t=>{const p=P(t);return {pos:[0,lerp(1.4,9,p),lerp(8.5,12,p)],look:[0,lerp(1,.4,p),lerp(0,-3,p)]};}});
+camDef({id:'arc',cat:'cam',ko:'아크',en:'Arc Shot',dur:4.4,
+  desc:'피사체를 가운데 두고 반원을 그리며 돕니다. 인물은 제자리인데 앞의 풀과 뒤의 나무가 서로 반대로 흘러요.',
+  use:'주인공의 등장, 제품을 둘러 보여줄 때, 두 인물이 맞서는 긴장된 순간.',
+  cam:t=>orb(lerp(-.8,.8,P(t)),.06,7.5)});
+camDef({id:'roll',cat:'cam',ko:'롤 / 더치 앵글',en:'Roll · Dutch Angle',view:null,kf:[.1,.55],
+  desc:'카메라를 옆으로 기울입니다. 기울어진 상태로 고정해서 찍으면 더치 앵글이라고 해요.',
+  use:'불안, 혼란, 긴장감을 줄 때, 역동적인 액션이나 뮤직비디오.',
+  cam:t=>({pos:BPOS,look:BL,roll:-.3*eIO(seg(t,.1,.55))}),post:t=>{if(t>.55)badge('더치 앵글 (기울인 채 고정)',0);}});
+
+/* ---- subject-centric ---- */
+camDef({id:'orbit-360',cat:'subj',ko:'오빗 360',en:'360° Orbit',dur:6,kf:[0,1],
+  desc:'피사체 주위를 한 바퀴 완전히 돕니다. 배경이 360도 전부 지나가며 인물이 세상의 중심처럼 보여요.',
+  use:'주인공 소개, 감정이 고조되는 순간, 제품 전체 보여주기, 드론으로 찍는 인물·건물.',
+  cam:t=>orb(t*TAU,.12,6.2)});
+camDef({id:'spiral-in',cat:'subj',ko:'오빗 푸시 인',en:'Orbit Push-in · Spiral In',dur:5,
+  desc:'피사체 주위를 돌면서 동시에 다가갑니다. 아크와 달리를 섞은 무빙이라 회전감과 몰입감이 함께 생겨요.',
+  use:'인물에게 집중시키는 순간, 뮤직비디오, 광고의 제품 클로즈업.',
+  cam:t=>{const p=P(t,.05,.95);return orb(lerp(1.6,0,p),lerp(.28,.06,p),lerp(12,3.2,p),[0,lerp(1.05,1.4,p),0]);}});
+camDef({id:'helix',cat:'subj',ko:'드론 헬릭스',en:'Helix · Rising Orbit',dur:6,
+  desc:'피사체 주위를 돌면서 점점 높이 올라갑니다. 나선을 그리듯 시야가 넓어지며 주변 풍경이 드러나요.',
+  use:'여행 영상 엔딩, 장소와 인물을 함께 소개할 때, 드론 촬영.',
+  cam:t=>{const p=P(t,.03,.97);return orb(lerp(0,TAU*.75,p),lerp(.05,.95,p),lerp(5,17,p),[0,1,0],lerp(38,46,p));}});
+camDef({id:'push-in',cat:'subj',ko:'푸시 인',en:'Push In',view:'side',dur:5,
+  desc:'인물을 향해 아주 천천히 다가갑니다. 아무 일도 일어나지 않는데도 긴장감과 감정이 차오르는 효과가 있어요.',
+  use:'인물이 중요한 결심을 하거나 깨닫는 순간, 인터뷰의 핵심 대답.',
+  cam:t=>{const p=P(t,.05,.95);return {pos:[0,lerp(1.45,1.64,p),lerp(8.5,1.6,p)],look:[0,lerp(1,1.6,p),0]};}});
+camDef({id:'pull-back',cat:'subj',ko:'풀백 리빌',en:'Pull-back Reveal',view:'side',dur:5,
+  desc:'얼굴 클로즈업에서 시작해 뒤로 쭉 빠지며 인물이 어디에 있는지 드러냅니다.',
+  use:'오프닝이나 엔딩, “알고 보니 이런 곳이었다” 하는 반전, 고독함 표현.',
+  cam:t=>{const p=P(t,.1,.92),d=Math.exp(lerp(Math.log(.5),Math.log(26),p));return {pos:[0,lerp(1.68,6,p),d],look:[0,lerp(1.67,1.6,p),0]};},opt:{noBall:1}});
+camDef({id:'lead-shot',cat:'subj',ko:'리드 숏',en:'Leading Shot',view:'side',dur:5,kf:[0,1],
+  desc:'걸어오는 인물의 앞에서 카메라가 같은 속도로 뒷걸음질 칩니다. 인물의 얼굴과 표정을 계속 볼 수 있어요.',
+  use:'대화하며 걷는 장면, 인물이 어딘가로 향하는 결연한 모습, 브이로그.',
+  cam:t=>{const wz=lerp(-7,1,t);return {pos:[.15,1.55,wz+3.3],look:[0,1.35,wz]};},
+  opt:t=>({walk:{x:0,z:lerp(-7,1,t),face:0},noBall:1}),dxf:t=>({subj:{x:0,z:lerp(-7,1,t),face:0}})});
+camDef({id:'follow-shot',cat:'subj',ko:'팔로우 숏',en:'Follow Shot',view:'side',dur:5,kf:[0,1],
+  desc:'인물의 뒤에서 같은 속도로 따라갑니다. 보는 사람이 인물과 함께 그 공간에 들어가는 느낌이 들어요.',
+  use:'새로운 장소에 들어서는 장면, 1인칭에 가까운 몰입, 다큐·브이로그.',
+  cam:t=>{const wz=lerp(3,-7,t);return {pos:[.35,1.65,wz+3],look:[0,1.2,wz-4]};},
+  opt:t=>({walk:{x:0,z:lerp(3,-7,t),face:Math.PI},noBall:1}),dxf:t=>({subj:{x:0,z:lerp(3,-7,t),face:Math.PI}})});
+camDef({id:'side-tracking',cat:'subj',ko:'사이드 트래킹',en:'Side Tracking',dur:5,kf:[0,1],
+  desc:'걷는 인물과 나란히 옆에서 같은 속도로 이동합니다. 인물은 화면 안 제자리, 뒤의 나무와 산이 흘러가요.',
+  use:'여정, 달리기·자전거 같은 스포츠, 인물의 이동을 보여줄 때.',
+  cam:t=>{const x=lerp(-6,5,t);return {pos:[x,1.4,4.6],look:[x,1.1,0]};},
+  opt:t=>({walk:{x:lerp(-6,5,t),z:0,face:Math.PI/2},noBall:1}),dxf:t=>({subj:{x:lerp(-6,5,t),z:0,face:Math.PI/2}})});
+camDef({id:'top-down',cat:'subj',ko:'탑다운 회전',en:'Top-down Spin',view:'side',dur:5,
+  desc:'피사체 바로 위에서 수직으로 내려다보며 천천히 회전하고 내려옵니다. 그림자와 바닥 패턴이 그래픽처럼 보여요.',
+  use:'드론 영상의 인트로, 인물이 누워 있거나 바닥에 무언가를 펼친 장면, 감각적인 전환.',
+  cam:t=>{const p=eIO(t),a=t*1.1;return {pos:[0,lerp(16,6,p),.001],look:[0,0,0],up:[Math.sin(a),0,-Math.cos(a)],fov:40};},opt:{jump:1}});
+camDef({id:'low-hero',cat:'subj',ko:'로우 앵글 히어로 숏',en:'Low-angle Hero Push',view:'side',dur:4.4,
+  desc:'바닥 가까이 낮게 깔린 카메라가 인물을 올려다보며 다가갑니다. 인물이 크고 강하게 보여요.',
+  use:'주인공 등장, 스포츠 선수, 자신감 있는 인물 소개, 광고.',
+  cam:t=>{const p=P(t,.05,.95);return {pos:[lerp(.9,.35,p),.28,lerp(5.2,2.3,p)],look:[0,1.5,0],fov:44};},opt:{noBall:1}});
+camDef({id:'crane-down',cat:'subj',ko:'크레인 다운',en:'Crane Down to Subject',view:'side',dur:5,
+  desc:'높은 곳에서 풍경을 보여주다가 내려오면서 인물을 눈높이로 만납니다.',
+  use:'장면의 시작에서 장소를 먼저 보여주고 주인공으로 좁혀 들어갈 때.',
+  cam:t=>{const p=P(t,.05,.95);return {pos:[0,lerp(14,1.55,p),lerp(16,4.6,p)],look:[0,lerp(0,1.3,p),lerp(-16,0,p)]};}});
+camDef({id:'reveal',cat:'subj',ko:'리빌 숏',en:'Reveal Shot',dur:4.4,dx:{occ:1},
+  desc:'나무나 기둥 같은 앞의 물체 뒤에서 카메라가 옆으로 빠져나오며 숨어 있던 인물을 드러냅니다.',
+  use:'인물의 첫 등장, 궁금증을 만든 뒤 공개하는 연출, 제품 공개.',
+  cam:t=>{const p=P(t,.12,.85);return {pos:[lerp(-.2,2.9,p),1.45,7.4],look:[0,1.1,0]};},opt:{occ:1}});
+
+/* ---- advanced & rigs ---- */
+camDef({id:'dolly-zoom',cat:'cam2',ko:'달리 줌',en:'Dolly Zoom · Vertigo Effect',dur:4.4,kf:[.1,.8],
+  desc:'카메라는 뒤로 빠지면서 줌은 당깁니다. 인물 크기는 그대로인데 뒤의 배경만 확 커지며 공간이 일그러져요.',
+  use:'충격, 깨달음, 공포처럼 인물의 세계가 흔들리는 순간.',
+  cam:t=>{const p=eIO(seg(t,.1,.8)),d=lerp(3.6,15,p);return {pos:[0,1.3,d],look:[0,1.05,0],fov:2*Math.atan(Math.tan(19*D2R)*3.6/d)/D2R};},
+  post:t=>{if(t>.1&&t<.8)badge('인물 크기 그대로 · 배경만 변함',0);}});
+def({id:'crash-zoom',cat:'cam2',ko:'크래시 줌',en:'Crash Zoom · Snap Zoom',dur:3,kf:[.3,.4],
+  desc:'아주 빠르게 확 당기는 줌. 순간적으로 화면이 흐려지고 도착하면서 살짝 흔들려요.',
+  use:'코믹한 리액션, 깜짝 놀라는 순간, 예능·숏폼, 중요한 물건을 콕 짚을 때.',
+  r:(t,T,dur)=>{const cf=u=>{const p=eOut(seg(u,.3,.4)),land=u>.4?Math.sin((u-.4)*90)*Math.exp(-(u-.4)*22):0;return {pos:BPOS,look:[0,lerp(1,1.45,p),0],fov:lerp(38,8,p),rot:[0,land*.004,land*.006]};};
+    const sp=cf(t),b=t>.3&&t<.42?Math.sin(Math.PI*seg(t,.3,.42))*6:0;xform(A(sp,2+T),{blur:b,s:1+b*.01});diag('top',sp,cf,{dur});}});
+camDef({id:'rack-focus',cat:'cam2',ko:'랙 포커스',en:'Rack Focus · Focus Pull',dur:5,kf:[.2,.45,.65,.9],
+  desc:'촬영 중에 초점을 앞에서 뒤로 옮겨 보는 사람의 시선을 이동시킵니다. 도식의 노란 점선이 초점 거리예요.',
+  use:'시선 유도, 새로운 인물이나 대상의 등장, 감성적인 디테일에서 장면 전체로 넘어갈 때.',
+  cam:t=>{const near=2.55,subj=7.9,inv=t<.55?lerp(1/near,1/subj,eIO(seg(t,.2,.45))):lerp(1/subj,1/60,eIO(seg(t,.65,.9)));return {pos:[-.35,.7,7.9],look:[-.45,.82,0],focus:1/inv};},
+  dxf:t=>{const inv=t<.55?lerp(1/2.55,1/7.9,eIO(seg(t,.2,.45))):lerp(1/7.9,1/60,eIO(seg(t,.65,.9)));return {flower:1,focus:Math.min(30,1/inv)};},
+  post:(t,T,sp)=>{if(!canFilter){badge('이 브라우저는 흐림 효과 미지원',0);return;}const f=sp.focus;badge(f<4?'초점: 앞의 꽃':f<15?'초점: 인물':'초점: 먼 배경',0,'#F0C24B');}});
+const shake=(s,a)=>[a*(.012*Math.sin(s*2.7)+.007*Math.sin(s*6.1+1.3)+.003*Math.sin(s*13.3+.4)),a*(.01*Math.sin(s*3.3+2)+.006*Math.sin(s*7.7)+.003*Math.sin(s*15.1+1)),a*(.016*Math.sin(s*2.1+.5)+.008*Math.sin(s*5.9))];
+camDef({id:'handheld',cat:'cam2',ko:'핸드헬드',en:'Handheld · Camera Shake',dur:5,kf:[.45],
+  desc:'삼각대 없이 손으로 들고 찍어서 화면이 미세하게 흔들립니다. 편집에서 셰이크 효과로 만들기도 해요.',
+  use:'현장감이 필요한 다큐, 긴박한 추격 장면, 자연스러운 브이로그.',
+  cam:(t,T)=>{const a=eIO(seg(t,.42,.55));return {pos:[0,1.5,6.2],look:[0,1.15,0],rot:shake(2+T,a)};},
+  post:t=>badge(t<.45?'삼각대 (고정)':'핸드헬드',0,t<.45?'#8E96A8':'#E0533D')});
+def({id:'gimbal',cat:'cam2',ko:'짐벌 vs 핸드헬드',en:'Gimbal · Steadicam',dur:5,kf:[0,1],
+  tl:CAM([0,1],{v2:[['짐벌',0,1,'a']],v1:[['핸드헬드',0,1,'a']]}),
+  desc:'걸으며 찍을 때 손으로만 들면 출렁이지만, 짐벌이나 스테디캠을 쓰면 물 흐르듯 부드럽게 유지됩니다.',
+  use:'인물을 따라가는 장면, 여행·부동산 영상, 결혼식, 원테이크 촬영.',
+  r:(t,T,dur)=>{const s=2+T,z=lerp(9,4.4,t);const hf=u=>{const ss=2+u*dur,zz=lerp(9,4.4,u);return {pos:[0,1.55+.06*Math.abs(Math.sin(ss*4.4)),zz],look:[0,1.25,zz-8],rot:shake(ss,2.2)};},gf=u=>{const zz=lerp(9,4.4,u);return {pos:[0,1.55+.01*Math.sin(u*dur*1.3),zz],look:[0,1.25,zz-8]};};
+    halves(A(hf(t),s,{noTag:1}),A2(gf(t),s,{noTag:1}),'핸드헬드','짐벌');diag('side',gf(t),gf,{dur});}});
+camDef({id:'pov',cat:'cam2',ko:'1인칭 시점 숏',en:'POV Shot',dur:5,kf:[0,1],
+  desc:'등장인물의 눈으로 보는 것처럼 찍습니다. 걸을 때의 출렁임까지 살리면 훨씬 실감나요.',
+  use:'몰입감이 필요한 장면, 게임 같은 연출, 체험·리뷰 영상.',
+  cam:(t,T)=>{const s=2+T;return {pos:[.2+.05*Math.sin(s*2.2),1.62+.045*Math.abs(Math.sin(s*4.4)),lerp(11,3.4,t)],look:[0,1.4,-3],rot:[0,0,.012*Math.sin(s*2.2)],fov:46};},
+  post:()=>vignette(.55)});
+camDef({id:'flyover',cat:'cam2',ko:'드론 플라이오버',en:'Drone Flyover',view:'side',dur:5,kf:[0,1],
+  desc:'드론이 높은 곳에서 풍경 위를 앞으로 날아가며 피사체 위를 지나갑니다. 가까운 땅은 빨리, 먼 산은 천천히 다가와요.',
+  use:'여행·풍경 영상 오프닝, 장소 소개, 스케일이 큰 장면.',
+  cam:t=>{const z=lerp(30,-16,eIO(t));return {pos:[0,11,z],look:[0,4,z-14],fov:48};}});
+camDef({id:'fpv-dive',cat:'cam2',ko:'FPV 다이브',en:'FPV Drone Dive',view:'side',dur:4,kf:[0,1],
+  desc:'작은 레이싱 드론(FPV)이 높은 곳에서 급강하해 몸을 기울이며 피사체 옆을 아슬아슬하게 스쳐 지나갑니다.',
+  use:'익스트림 스포츠, 자동차·건물 소개, 아주 역동적인 오프닝.',
+  cam:t=>{const pf=u=>{const q=clamp(u);return [1.3*Math.sin(q*Math.PI)*.8,1+15*Math.pow(1-q,2.2),lerp(28,-6,q)];};const p=eIO(t),a=pf(p),b=pf(p+.04);
+    return {pos:a,look:[b[0],b[1]-.4,b[2]],fov:62,roll:.35*Math.sin(p*TAU*1.2)};}});
+camDef({id:'barrel-roll',cat:'cam2',ko:'배럴 롤',en:'Barrel Roll',dur:3.6,
+  desc:'카메라가 앞으로 나아가며 한 바퀴 통째로 회전합니다.',
+  use:'뮤직비디오, 액션, FPV 드론 영상, 장면 전환용 무빙.',
+  cam:t=>{const p=eIO(seg(t,.12,.88));return {pos:[0,1.45,lerp(8.5,4.2,p)],look:BL,roll:p*TAU};}});
+def({id:'ken-burns',cat:'cam2',ko:'켄 번즈 효과',en:'Ken Burns Effect',dur:5,
+  desc:'움직이지 않는 사진 한 장에 천천히 확대와 이동을 줘서 영상처럼 보이게 합니다.',
+  use:'사진 슬라이드쇼, 다큐멘터리에서 옛날 사진을 소개할 때, 영상 소스가 부족할 때.',
+  tl:{v1:[['사진.jpg',0,1,'g']],kf:[0,1]},
+  r:(t)=>{const p=eIO(t);xform(A({pos:[0,1.5,6.5],look:[0,1.1,0]},3.1,{noTag:1}),{s:lerp(1.05,1.45,p),dx:lerp(30,-70,p),dy:lerp(10,-25,p),filter:'sepia(.35) saturate(.85)'});
+    vignette(.45);badge('정지 사진 1장',0,'#7F5BC4');}});
+
+/* ---- dynamic editing ---- */
+const BEAT=.5;
+const beatsTL=dur=>{const a=[];for(let s=0;s<dur-1e-6;s+=BEAT)a.push(s/dur);return a;};
+const pulse=(T,k=7)=>Math.exp(-((T%BEAT)/BEAT)*k);
+function beatMeter(T){const n=Math.floor(T/BEAT)%4;for(let i=0;i<4;i++){ctx.fillStyle=i===n?'#F0C24B':'rgba(255,255,255,.25)';rr(ctx,14+i*16,H-26,11,11,2);ctx.fill();}text('BEAT',82,H-16.5,{size:10,weight:600,font:MONO,color:'#AEB5C2'});}
+const MUSIC=(dur,v1,extra={})=>Object.assign({v1,a1:[['음악',0,1,'am']],beats:beatsTL(dur)},extra);
+const BEATSH=[['A',{pos:BPOS,look:BL}],['A',{pos:[0,1.66,1.05],look:[0,1.64,0]}],['A',orb(.9,.15,6)],['B',{}],['A',{pos:[.35,.25,2.6],look:[0,1.5,0],fov:44}],['B',{pos:[-6,2.2,9],look:[2,2.5,-4]}],['A',orb(-.8,.45,9)],['A',{pos:[0,9,.6],look:[0,0,0]}]];
+def({id:'beat-cut',cat:'dyn',ko:'비트 컷 / 퀵 컷',en:'Cut to the Beat · Quick Cuts',
+  desc:'음악 박자마다 컷을 바꿉니다. 짧은 컷을 빠르게 이어 붙이면 에너지가 확 올라가요.',
+  use:'뮤직비디오, 숏폼, 하이라이트·트레일러, 여행 몽타주.',
+  tl:MUSIC(4,BEATSH.map((s,i)=>[s[0],i/8,(i+1)/8,s[0]==='A'?'a':'b'])),
+  r:(t,T)=>{const [w,sp]=BEATSH[Math.floor(T/BEAT)%BEATSH.length];put(w==='A'?A(sp,2+T,{jump:1}):B(sp,2+T));veil('#fff',.25*pulse(T,10));beatMeter(T);}});
+def({id:'punch-in',cat:'dyn',ko:'펀치 인',en:'Punch-in Zoom',
+  desc:'박자에 맞춰 화면을 툭툭 확대합니다. 같은 영상인데도 리듬감이 생기고 강조점이 분명해져요.',
+  use:'유튜브 토크에서 웃긴 말이나 핵심 문장 강조, 숏폼, 리액션.',
+  tl:MUSIC(4,[['A',0,1,'a']]),
+  r:(t,T)=>{const n=Math.floor(T/BEAT),S=[1,1.3,1,1.6],cur=S[n%4],prev=S[(n+3)%4],s=lerp(prev,cur,eOut(clamp((T%BEAT)/.07)));
+    put(A({pos:[0,1.5,3.2],look:[0,1.35,0],fov:fovZ(s)},2+T,{noBall:1}));beatMeter(T);badge(`× ${s.toFixed(2)}`,0,'#F0C24B');}});
+def({id:'impact-shake',cat:'dyn',ko:'임팩트 셰이크',en:'Impact Shake',
+  desc:'착지하거나 부딪히는 순간에 화면을 강하게 흔들고 살짝 번쩍이게 합니다. 무게감과 충격이 실려요.',
+  use:'액션, 스포츠, 게임 영상, 효과음과 함께 강조하고 싶은 순간.',
+  tl:MUSIC(4,[['A',0,1,'a']],{beats:[],marks:[.25,.75]}),
+  r:(t,T)=>{let a=0,f=0;for(const L of [1,3]){if(T>=L){a+=Math.exp(-(T-L)*6);f+=Math.exp(-(T-L)*18);}}
+    put(A({pos:[0,1.4,4.6],look:[0,1.25,0],fov:38/(1+.07*a),rot:[a*.02*Math.sin(T*70),a*.016*Math.cos(T*83),a*.03*Math.sin(T*60)]},T,{jump:1,noBall:1}));veil('#fff',.3*f);if(a>.3)badge('쿵!',0,'#E0533D');}});
+const velSt=T=>{const n=Math.floor(T/BEAT),u=(T%BEAT)/BEAT,a=.35,per=a*BEAT*3+(1-a)*BEAT*.25;return n*per+(u<a?u*BEAT*3:a*BEAT*3+(u-a)*BEAT*.25);};
+def({id:'velocity',cat:'dyn',ko:'벨로시티 편집',en:'Velocity Edit',
+  desc:'박자마다 영상 속도를 확 빠르게 했다가 확 느리게 바꾸는 편집. 스피드 램프를 음악에 맞춰 반복하는 방식이에요.',
+  use:'숏폼·틱톡 편집, 댄스, 자동차, 스포츠 하이라이트.',
+  tl:MUSIC(4,[['A 3× ↔ 0.25×',0,1,'a']]),
+  r:(t,T)=>{const fast=(T%BEAT)/BEAT<.35;put(A(orb(lerp(-.4,.4,t),.08,5,[0,1.1,0],38/(1+.12*pulse(T,5))),.3+velSt(T),{jump:1}));badge(fast?'3× 빠르게':'0.25× 느리게',0,fast?'#E0533D':'#3D9BE0');beatMeter(T);}});
+def({id:'smash-cut',cat:'dyn',ko:'스매시 컷',en:'Smash Cut',
+  desc:'조용한 장면에서 아무 예고 없이 정반대로 강렬한 장면으로 확 끊어 넘깁니다.',
+  use:'반전, 코미디의 한 방, 공포·액션의 충격, 분위기를 단숨에 바꿀 때.',
+  tl:AB(.55),
+  r:(t,T)=>{if(t<.55){xform(A({pos:[0,1.5,9.5-t*2],look:BL},2+T*.5),{filter:'saturate(.55)'});badge('고요한 장면',0,'#8E96A8');}
+    else{const u=T-.55*4,a=Math.exp(-u*1.5);put(B({pos:[-1,1.2,6],look:[1+u*.8,1.2,0],fov:30,rot:shake(T*4,a*3)},2+T*1.5));veil('#E0533D',.22*Math.exp(-u*8));badge('갑자기 강렬한 장면',0,'#E0533D');}}});
+def({id:'cut-on-action',cat:'dyn',ko:'컷 온 액션',en:'Cut on Action · Match on Action',
+  desc:'인물이 움직이는 도중에 다른 크기의 화면으로 컷합니다. 동작이 이어져서 컷이 바뀐 걸 거의 못 느껴요.',
+  use:'액션·스포츠 장면, 자연스럽게 샷 크기를 바꾸고 싶을 때, 댄스 영상.',
+  tl:{v1:[['A 와이드',0,.4375,'a'],['A 가까이',.4375,1,'a']],a1:[['A 소리',0,1,'aa']],marks:[.4375]},
+  r:(t,T)=>{const st=T+.5,w=st<2.25;put(A(w?{pos:[0,1.4,7.5],look:[0,1.1,0]}:{pos:[.4,1.75,2.7],look:[0,1.8,0]},st,{jump:1,noBall:1}));badge(w?'와이드':'가까이 (동작은 이어짐)',0,w?'#8E96A8':'#F0C24B');}});
+const XC=[.2,.16,.13,.11,.09,.08,.07,.06,.05,.05],XCs=XC.map((d,i)=>XC.slice(0,i).reduce((a,b)=>a+b,0));
+def({id:'cross-cut',cat:'dyn',ko:'교차 편집',en:'Cross Cutting',dur:5,
+  desc:'서로 다른 장소에서 동시에 일어나는 두 사건을 번갈아 보여줍니다. 컷을 점점 짧게 하면 긴장감이 올라가요.',
+  use:'추격, 클라이맥스, 두 인물이 만나기 직전, 시간 싸움.',
+  tl:{v1:XC.map((d,i)=>[i%2?'B':'A',XCs[i],XCs[i]+d,i%2?'b':'a']),a1:[['긴장감 상승',0,1,'am']],marks:XCs.slice(1)},
+  r:(t,T)=>{let i=0;while(i<XC.length-1&&t>=XCs[i+1])i++;put(i%2?B({},2+T):A({pos:[0,1.4,6],look:[0,1.1,0]},2+T));badge(i%2?'B 장소':'A 장소',0,i%2?CLR.b:CLR.a);}});
+def({id:'echo',cat:'dyn',ko:'에코 / 잔상',en:'Echo · Motion Trail',
+  desc:'움직이는 인물 뒤로 지나온 모습이 반투명하게 꼬리처럼 남습니다.',
+  use:'댄스, 스포츠, 뮤직비디오, 동작의 흐름을 강조할 때.',
+  tl:MUSIC(4,[['A + 잔상',0,1,'a']],{beats:[]}),
+  r:(t,T)=>{const st=1.6+T*.8,cam={pos:[0,1.4,6.5],look:[0,1.1,0]},wx=s=>-2.8+(s-1.6)*1.6;put(A(cam,st,{jump:1,walk:{x:wx(st),z:0,face:Math.PI/2},noBall:1}));
+    for(let i=1;i<=(THUMB?3:5);i++){const s=st-i*.09;shot('A',cc,cam,s,{ghost:1,jump:1,walk:{x:wx(s),z:0,face:Math.PI/2}});put(bufC,.42*(1-i/6));}}});
+function rgbSplit(buf,d){
+  if(d<.5){put(buf);return;}
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  for(const [col,dx] of [['#ff0000',-d],['#00ff00',0],['#0000ff',d]]){
+    cc.setTransform(1,0,0,1,0,0);reset(cc);cc.drawImage(buf,0,0);cc.globalCompositeOperation='multiply';cc.fillStyle=col;cc.fillRect(0,0,bufC.width,bufC.height);cc.globalCompositeOperation='source-over';
+    ctx.globalCompositeOperation='lighter';ctx.drawImage(bufC,dx-Math.abs(d),0,W+2*Math.abs(d),H);ctx.globalCompositeOperation='source-over';}
+}
+def({id:'rgb-split',cat:'dyn',ko:'RGB 스플릿',en:'RGB Split · Chromatic Aberration',
+  desc:'박자에 맞춰 화면의 빨강·초록·파랑 색이 옆으로 어긋났다 돌아옵니다.',
+  use:'힙합·EDM 뮤직비디오, 테크·게임 영상, 강렬한 인트로.',
+  tl:MUSIC(4,[['A',0,1,'a']]),
+  r:(t,T)=>{rgbSplit(A({pos:[0,1.45,5.5],look:[0,1.15,0],fov:38/(1+.08*pulse(T,6))},2+T,{jump:1}),14*pulse(T,6));beatMeter(T);}});
+def({id:'flash-pulse',cat:'dyn',ko:'플래시 펄스',en:'Flash Pulse · Strobe',
+  desc:'음악 박자마다 화면이 하얗게 번쩍입니다. 너무 세거나 빠르면 눈이 피로하고 광과민성 발작 위험이 있어 적당히 써야 해요.',
+  use:'클럽·EDM 분위기, 비트 강조, 뮤직비디오.',
+  tl:MUSIC(4,[['B',0,1,'b']]),
+  r:(t,T)=>{put(B({pos:[0,1.6,9],look:[0,2.2,0],fov:38/(1+.1*pulse(T))},2+T));veil('#fff',.42*pulse(T,14));beatMeter(T);}});
+def({id:'letterbox',cat:'dyn',ko:'시네마틱 바',en:'Letterbox · Cinematic Bars',
+  desc:'화면 위아래에 검은 띠를 넣어 영화관 화면(2.39:1)처럼 가로로 길게 만듭니다.',
+  use:'영화 같은 분위기, 오프닝, 중요한 장면으로 들어가는 순간.',
+  tl:{v1:[['A',0,1,'a']],v2:[['레터박스',.15,1,'g']],a1:[['A 소리',0,1,'aa']]},
+  r:(t,T)=>{const p=eIO(seg(t,.15,.45));put(A(orb(lerp(-.3,.3,t),.05,7.5),2+T));const bh=46*p;ctx.fillStyle='#000';ctx.fillRect(0,0,W,bh);ctx.fillRect(0,H-bh,W,bh);if(p>=1)badge('2.39 : 1',0,'#8E96A8');}});
+
+/* ---- shots & framing ---- */
+const SIZES=[
+  {id:'els',short:'ELS',ko:'익스트림 롱숏',en:'Extreme Long Shot',note:'인물은 점처럼',span:26,ly:3,from:1,desc:'인물이 아주 작게 보일 만큼 멀리서 넓은 풍경을 담습니다.',use:'장소와 분위기 소개(설정 숏), 광활함이나 고독함 표현.'},
+  {id:'ls',short:'LS',ko:'롱숏 / 풀숏',en:'Long Shot · Full Shot',note:'머리부터 발끝까지',span:2.5,ly:.95,from:0,desc:'인물의 머리부터 발끝까지 전신이 다 들어오게 찍습니다.',use:'인물의 동작과 옷차림, 주변 공간과의 관계를 보여줄 때.'},
+  {id:'ms',short:'MS',ko:'미디엄숏',en:'Medium Shot',note:'허리 위',span:1.05,ly:1.36,from:1,desc:'인물의 허리 위를 담습니다. 표정과 손동작이 함께 보여요.',use:'대화, 인터뷰, 유튜브 토크처럼 가장 흔하게 쓰는 크기.'},
+  {id:'bs',short:'BS',ko:'바스트숏',en:'Bust Shot · Medium Close-up',note:'가슴 위',span:.66,ly:1.47,from:2,desc:'가슴 위로 담습니다. 미디엄 클로즈업이라고도 해요.',use:'인터뷰, 뉴스, 감정이 조금 더 실린 대화.'},
+  {id:'cu',short:'CU',ko:'클로즈업',en:'Close-up',note:'얼굴',span:.36,ly:1.66,from:3,desc:'얼굴이 화면을 가득 채웁니다.',use:'감정과 표정을 강하게 전달할 때, 중요한 대사.'},
+  {id:'ecu',short:'ECU',ko:'익스트림 클로즈업',en:'Extreme Close-up',note:'눈만',span:.12,ly:1.68,from:4,desc:'눈, 입, 손처럼 한 부분만 아주 크게 담습니다.',use:'긴장감이 최고조일 때, 디테일 강조, 강렬한 인트로.'},
+];
+const sizeSpec=s=>{const d=s.span/2/Math.tan(19*D2R);return {pos:[0,s.ly,d],look:[0,s.ly,0],fov:38};};
+const sizeMix=(a,b,p)=>{const A_=sizeSpec(a),B_=sizeSpec(b),d=Math.exp(lerp(Math.log(A_.pos[2]),Math.log(B_.pos[2]),p)),y=lerp(a.ly,b.ly,p);return {pos:[0,y,d],look:[0,y,0],fov:38};};
+camDef({id:'shot-sizes',cat:'shot',ko:'샷 사이즈 한눈에',en:'Shot Sizes',dur:7.2,view:'crop',
+  desc:'인물을 화면에 얼마나 크게 담느냐에 따라 이름이 달라집니다. 넓은 것부터 익스트림 롱숏, 롱숏, 미디엄숏, 바스트숏, 클로즈업, 익스트림 클로즈업.',
+  use:'넓은 샷으로 상황을, 가까운 샷으로 감정을 전달해요. 크기를 바꿔 가며 이어 붙이면 단조롭지 않아요.',
+  tl:{v1:SIZES.map((s,i)=>[s.short,i/6,(i+1)/6,'a']),a1:[['A 소리',0,1,'aa']],marks:[1,2,3,4,5].map(i=>i/6)},
+  cam:t=>sizeSpec(SIZES[Math.min(5,Math.floor(t*6))]),opt:{noBall:1},
+  post:t=>{const s=SIZES[Math.min(5,Math.floor(t*6))];badge(`${s.short} · ${s.ko}`,0,'#F0C24B');}});
+SIZES.forEach(s=>camDef({id:'shot-'+s.id,cat:'shot',ko:s.ko,en:s.en,view:'crop',desc:s.desc,use:s.use,kf:[.12,.5],
+  cam:t=>sizeMix(SIZES[s.from],s,eIO(seg(t,.12,.5))),opt:{noBall:1},post:()=>badge(`${s.short} · ${s.note}`,0,'#F0C24B')}));
+const ANG={eye:{pos:[0,1.66,4.4],look:[0,1.3,0]},high:{pos:[0,6.4,3.2],look:[0,.8,0]},low:{pos:[0,.2,3.1],look:[0,1.45,0],fov:42},bird:{pos:[0,10,.6],look:[0,0,0]}};
+[['eye-level','high','eye','아이 레벨','Eye Level','인물의 눈높이에서 수평으로 찍습니다. 가장 자연스럽고 중립적인 시선이에요.','인터뷰, 대화, 일상적인 장면.'],
+ ['high-angle','eye','high','하이 앵글','High Angle','위에서 내려다보며 찍습니다. 인물이 작고 약해 보이고, 주변 상황이 잘 보여요.','외로움이나 위축된 감정, 상황 설명.'],
+ ['low-angle','eye','low','로우 앵글','Low Angle','아래에서 올려다보며 찍습니다. 인물이 크고 당당해 보이고 배경에 하늘이 많이 들어와요.','영웅·권위·자신감, 위압감.'],
+ ['birds-eye','eye','bird',"버드아이 뷰","Bird's-eye View",'새가 내려다보듯 거의 수직 위에서 찍습니다. 인물과 그림자, 바닥이 지도처럼 보여요.','장소의 구조를 보여줄 때, 운명이나 고립감 표현, 감각적인 오프닝.']
+].forEach(([id,from,to,ko,en,desc,use])=>camDef({id,cat:'shot',ko,en,desc,use,view:'side',kf:[.12,.5],
+  cam:t=>mixSpec(ANG[from],ANG[to],eIO(seg(t,.12,.5))),opt:{noBall:1},post:()=>badge(ko,0,'#F0C24B')}));
+camDef({id:'ots',cat:'shot',ko:'오버 더 숄더',en:'Over the Shoulder · OTS',dur:4.4,dx:{ots:1},
+  desc:'상대방의 어깨와 뒷머리를 화면 앞에 걸치고, 그 너머로 말하는 사람을 찍습니다. 앞사람은 초점이 나가 흐려져요.',
+  use:'대화 장면, 인터뷰, 두 사람의 관계와 거리감을 보여줄 때.',
+  cam:t=>({pos:[lerp(-.95,-.8,t),1.6,lerp(3.8,3.5,t)],look:[.25,1.45,0],fov:32,focus:3.6}),opt:{ots:1,noBall:1}});
+camDef({id:'thirds',cat:'shot',ko:'3분할 구도',en:'Rule of Thirds',dur:4.4,view:null,kf:[.45,.65],
+  desc:'화면을 가로세로 3등분한 선이 만나는 곳에 주인공을 둡니다. 가운데보다 안정적이고 시선이 머물 공간이 생겨요.',
+  use:'거의 모든 촬영의 기본 구도, 인터뷰, 풍경.',
+  cam:t=>{const p=eIO(seg(t,.45,.65));return {pos:[0,1.5,5.5],look:[lerp(0,1.12,p),lerp(1.2,1.03,p),0]};},opt:{noBall:1},
+  post:t=>{ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1;ctx.beginPath();[W/3,2*W/3].forEach(x=>{ctx.moveTo(x,0);ctx.lineTo(x,H);});[H/3,2*H/3].forEach(y=>{ctx.moveTo(0,y);ctx.lineTo(W,y);});ctx.stroke();
+    ctx.fillStyle='#F0C24B';[[W/3,H/3],[2*W/3,H/3],[W/3,2*H/3],[2*W/3,2*H/3]].forEach(([x,y])=>{ctx.beginPath();circ(ctx,x,y,4);ctx.fill();});
+    badge(t<.55?'가운데 배치':'3분할 교차점에 배치',0,t<.55?'#8E96A8':'#F0C24B');}});
+camDef({id:'lead-room',cat:'shot',ko:'리드룸',en:'Lead Room · Look Room',scene:'B',st0:1,dur:5,view:null,kf:[.45,.6],
+  tl:{v1:[['B · 도시',0,1,'b']],a1:[['B 소리',0,1,'ab']],kf:[.45,.6]},
+  desc:'움직이거나 바라보는 방향 앞쪽에 여유 공간을 남겨둡니다. 앞이 막히면 답답하고 부딪힐 것 같은 느낌이 들어요.',
+  use:'움직이는 차·사람 촬영, 인물이 옆을 볼 때(룩룸), 인터뷰 구도.',
+  cam:(t,T)=>{const cx=has3D?SB.carX(1+T):0,off=lerp(2.6,-3.2,eIO(seg(t,.45,.6)));return {pos:[cx+off,1.3,8.2],look:[cx+off,.9,1.2]};},
+  post:(t,T)=>{if(!has3D)return;const good=t<.52,col=good?'#4FB37A':'#E0533D';const v=new T3.Vector3(SB.carX(1+T)+2.2,.7,1).project(cam3);const fx=(v.x+1)/2*W,fy=(1-v.y)/2*H;
+    ctx.fillStyle=good?'rgba(79,179,122,.16)':'rgba(224,83,61,.2)';ctx.fillRect(fx,fy-60,Math.max(0,W-fx),120);
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(fx+6,fy-70);ctx.lineTo(W-10,fy-70);ctx.stroke();text('리드룸',Math.min(W-60,fx+10),fy-78,{size:12,weight:700,color:col});
+    badge(good?'앞쪽 여유 공간 있음':'앞이 꽉 막힘',0,col);}});
+camDef({id:'silhouette',cat:'shot',ko:'실루엣 (역광)',en:'Silhouette · Backlight',dur:4.4,view:'side',
+  desc:'해를 등지고 찍어서 인물이 검은 윤곽으로만 보이게 합니다. 하늘이 밝을수록 윤곽이 또렷해져요.',
+  use:'감성적인 엔딩, 신비로운 인물 소개, 노을 장면, 얼굴을 드러내지 않고 싶을 때.',
+  cam:t=>({pos:[lerp(-.2,.2,t),.45,4.2],look:[0,1.45,0],fov:40}),
+  opt:()=>({sil:1,noBall:1,sunV:has3D?new T3.Vector3(-.45,1.5,-4.2).normalize():null})});
+camDef({id:'tilt-shift',cat:'shot',ko:'틸트 시프트 (미니어처)',en:'Tilt-shift · Miniature',dur:4.4,view:'side',speed:3,
+  desc:'화면 위아래를 흐리고 가운데만 선명하게, 채도를 높여 실제 풍경을 장난감 모형처럼 보이게 합니다. 보통 높은 곳에서 내려다보며 빠르게 재생해요.',
+  use:'도시·축제 풍경, 귀엽고 독특한 분위기의 여행 영상.',
+  cam:()=>({pos:[9,10,12],look:[0,.4,0],fov:30}),opt:{jump:1},
+  r:null});
+(()=>{const it=TECH.find(x=>x.id==='tilt-shift'),cf=it.cam;it.r=(t,T,dur)=>{const buf=A(cf(t),2+T*3,{jump:1}),f='saturate(1.7) contrast(1.08)';xform(buf,{filter:f});
+  if(!canFilter){badge('이 브라우저는 흐림 효과 미지원',0);return;}
+  [[0,.13,8],[.13,.28,4],[.28,.36,1.6],[.64,.72,1.6],[.72,.87,4],[.87,1,8]].forEach(([a,b,bl])=>{ctx.save();ctx.beginPath();ctx.rect(0,a*H,W,(b-a)*H+.5);ctx.clip();xform(buf,{blur:bl,filter:f});ctx.restore();});
+  badge('미니어처 느낌',0,'#F0B43C');diag('side',cf(t),cf,{dur});};})();
+
+/* ---- transitions ---- */
+def({id:'cut',cat:'tr',ko:'컷',en:'Cut · Hard Cut',dur:3,
+  desc:'효과 없이 한 장면에서 다음 장면으로 즉시 바뀝니다. 편집의 가장 기본 단위예요.',
+  use:'대부분의 편집은 그냥 컷입니다. 흐름이 끊기지 않고 템포가 빨라 보여서, 전환 효과는 꼭 필요한 곳에만 쓰는 게 좋아요.',
+  tl:AB(.5),r:(t,T)=>put(t<.5?A({},2+T):B({},2+T))});
+def({id:'fade-in',cat:'tr',ko:'페이드 인',en:'Fade In',dur:3,
+  desc:'검은 화면에서 영상이 서서히 밝아지며 나타납니다.',
+  use:'영상의 첫 장면, 새로운 챕터를 시작할 때.',
+  tl:{v1:[['A · 들판',.15,1,'a']],a1:[['A 소리',.15,1,'aa']],fx:[[.15,.7,'페이드 인']]},
+  r:(t,T)=>put(A({},2+T),eIO(seg(t,.15,.7)))});
+def({id:'fade-out',cat:'tr',ko:'페이드 아웃',en:'Fade Out',dur:3,
+  desc:'영상이 서서히 어두워져 검은 화면으로 사라집니다.',
+  use:'영상의 마지막, 이야기를 마무리하며 여운을 남길 때.',
+  tl:{v1:[['A · 들판',0,.85,'a']],a1:[['A 소리',0,.85,'aa']],fx:[[.3,.85,'페이드 아웃']]},
+  r:(t,T)=>put(A({},2+T),1-eIO(seg(t,.3,.85)))});
+def({id:'dip-black',cat:'tr',ko:'딥 투 블랙',en:'Dip to Black',dur:3.4,
+  desc:'앞 장면이 페이드 아웃되고 잠깐 검은 화면을 거친 뒤 다음 장면이 페이드 인됩니다.',
+  use:'시간이 흘렀거나 장소가 바뀌었다는 걸 알릴 때.',
+  tl:AB(.5,[.25,.75],'딥 투 블랙'),
+  r:(t,T)=>t<.5?put(A({},2+T),1-eIO(seg(t,.25,.47))):put(B({},2+T),eIO(seg(t,.53,.75)))});
+def({id:'flash',cat:'tr',ko:'화이트 플래시',en:'Dip to White · Flash',dur:3,
+  desc:'화면이 하얗게 번쩍이는 순간 다음 장면으로 바뀝니다.',
+  use:'회상 장면, 충격적인 순간, 카메라 셔터 느낌, 음악 비트에 맞춘 전환.',
+  tl:AB(.5,[.44,.64],'플래시'),
+  r:(t,T)=>{put(t<.5?A({},2+T):B({},2+T));veil('#fff',t<.5?eIn(seg(t,.44,.5)):Math.pow(1-seg(t,.5,.64),2));}});
+def({id:'dissolve',cat:'tr',ko:'디졸브',en:'Cross Dissolve',dur:3.4,
+  desc:'앞 장면이 사라지는 동안 다음 장면이 겹쳐 나타납니다. 크로스페이드라고도 불러요.',
+  use:'부드러운 시간 경과, 감성적인 연결, 몽타주.',
+  tl:AB(.5,[.3,.7],'디졸브'),
+  r:(t,T)=>{put(A({},2+T));put(B({},2+T),eIO(seg(t,.3,.7)));}});
+def({id:'wipe',cat:'tr',ko:'와이프',en:'Wipe',dur:3,
+  desc:'경계선이 화면을 가로지르며 앞 장면을 걷어내고 다음 장면을 보여줍니다.',
+  use:'장소가 바뀔 때, 레트로하거나 만화 같은 분위기를 낼 때.',
+  tl:AB(.5,[.3,.72],'와이프'),
+  r:(t,T)=>{const p=eIO(seg(t,.3,.72));put(A({},2+T));const b=B({},2+T);ctx.save();ctx.beginPath();ctx.rect(0,0,p*W,H);ctx.clip();put(b);ctx.restore();
+    if(p>0&&p<1){ctx.fillStyle='rgba(255,255,255,.9)';ctx.fillRect(p*W-1,0,2,H);}}});
+def({id:'iris',cat:'tr',ko:'아이리스 아웃 / 인',en:'Iris Out · Iris In',dur:3.6,
+  desc:'화면이 동그란 구멍처럼 작아지며 닫히고, 다음 장면이 원에서부터 열립니다.',
+  use:'고전 영화나 만화 같은 엔딩, 특정 인물이나 대상을 콕 집어 강조할 때.',
+  tl:AB(.5,[.1,.9],'아이리스'),
+  r:(t,T)=>{const cx=W/2,cy=H/2+8,R=400,a=t<.5,r=a?R*(1-eIO(seg(t,.1,.45))):R*eIO(seg(t,.55,.9));
+    const buf=a?A({},2+T):B({},2+T);ctx.save();ctx.beginPath();ctx.arc(cx,cy,Math.max(0,r),0,TAU);ctx.clip();put(buf);ctx.restore();}});
+def({id:'push',cat:'tr',ko:'푸시 / 슬라이드',en:'Push · Slide',dur:3,
+  desc:'다음 장면이 옆에서 들어오면서 앞 장면을 밀어냅니다.',
+  use:'정보를 차례로 넘길 때, 슬라이드쇼, 휴대폰 화면을 넘기는 듯한 느낌.',
+  tl:AB(.5,[.3,.7],'푸시'),
+  r:(t,T)=>{const p=eIO(seg(t,.3,.7));const a=A({},2+T),b=B({},2+T);ctx.drawImage(a,-p*W,0,W,H);ctx.drawImage(b,W-p*W,0,W,H);}});
+def({id:'split',cat:'tr',ko:'스플릿 스크린',en:'Split Screen',dur:3.6,
+  desc:'화면을 나눠 두 장면을 동시에 보여줍니다.',
+  use:'비포·애프터 비교, 전화 통화하는 두 사람, 서로 다른 곳에서 동시에 일어나는 일.',
+  tl:{v2:[['B · 도시',.3,1,'b']],v1:[['A · 들판',0,1,'a']],a1:[['A 소리',0,1,'aa']],fx:[[.3,.65,'분할','v2']]},
+  r:(t,T)=>{const p=eIO(seg(t,.3,.65)),sp=W-p*W/2;const a=A({},2+T),b=B({},2+T);
+    ctx.save();ctx.beginPath();ctx.rect(0,0,sp,H);ctx.clip();ctx.drawImage(a,-p*W/4,0,W,H);ctx.restore();
+    ctx.save();ctx.beginPath();ctx.rect(sp,0,W-sp,H);ctx.clip();ctx.drawImage(b,W/2-p*W/4,0,W,H);ctx.restore();
+    if(p>0){ctx.fillStyle='#0B0D12';ctx.fillRect(sp-1.5,0,3,H);}}});
+def({id:'zoom-transition',cat:'tr',ko:'줌 전환',en:'Zoom Transition',dur:3,
+  desc:'화면이 빠르게 확대되며 흐려지는 순간 다음 장면으로 넘어가고, 다음 장면은 확대된 상태에서 제자리로 돌아옵니다.',
+  use:'브이로그, 여행 영상처럼 빠른 템포로 장소를 넘나들 때.',
+  tl:AB(.5,[.22,.78],'줌 전환'),
+  r:(t,T)=>{if(t<.5){const p=eIn(seg(t,.22,.5));xform(A({},2+T),{s:1+p*2.6,blur:p*12});}else{const p=eOut(seg(t,.5,.78));xform(B({},2+T),{s:3.6-2.6*p,blur:(1-p)*12});}}});
+def({id:'whip-pan',cat:'tr',ko:'휩 팬',en:'Whip Pan · Swish Pan',dur:3,
+  desc:'카메라를 아주 빠르게 휙 돌려 화면이 뭉개지는 순간 다음 장면으로 바꿉니다.',
+  use:'장소 이동을 에너지 있게 연결할 때. 두 컷 모두 같은 방향으로 휘둘러 찍어 두면 이어 붙이기 쉬워요.',
+  tl:AB(.5,[.28,.72],'휩 팬'),
+  r:(t,T,dur)=>{const pa=x=>1000*eIn(seg(x,.28,.5)),pb=x=>-1000*(1-eOut(seg(x,.5,.72)));const f=t<.5?pa:pb;const d=1/(30*dur);
+    const len=Math.min(460,Math.abs(f(Math.min(t+d,t<.5?.5:1))-f(t))*1.3);smearX(t<.5?A({pan:f(t)},2+T):B({pan:f(t)},2+T),len);}});
+def({id:'spin',cat:'tr',ko:'스핀 전환',en:'Spin Transition',dur:3,
+  desc:'화면이 빙글 돌면서 다음 장면으로 넘어갑니다.',
+  use:'역동적인 브이로그, 뮤직비디오, 분위기를 확 바꾸고 싶을 때.',
+  tl:AB(.5,[.25,.75],'스핀'),
+  r:(t,T,dur)=>{const q=seg(t,.25,.75),ang=x=>eIO(x)*TAU;const w=ang(Math.min(1,q+1/(30*dur*.5)))-ang(q);const s=1+.9*Math.sin(Math.PI*q);
+    const buf=q<.5?A({},2+T):B({},2+T);if(Math.abs(w)<.01){xform(buf,{s,r:ang(q)});return;}
+    const N=THUMB?4:7;for(let i=0;i<N;i++){xform(buf,{s,r:ang(q)+(i/(N-1)-.5)*w*1.4,a:1/(i+1)});}}});
+def({id:'glitch',cat:'tr',ko:'글리치',en:'Glitch',dur:3,
+  desc:'디지털 신호가 깨진 것처럼 화면이 찢기고 색이 어긋나며 장면이 바뀝니다.',
+  use:'테크·게임 콘텐츠, 긴장감이나 사이버펑크 분위기, 강렬한 인트로.',
+  tl:AB(.5,[.38,.62],'글리치'),
+  r:(t,T)=>{const a=A({},2+T),b=B({},2+T);const k=clamp(1-Math.abs(t-.5)/.12);
+    if(k<=0){put(t<.5?a:b);return;}
+    const sd=Math.floor(T*24);const src=rnd(sd)<(t<.5?.3:.75)?b:a;put(src);
+    const n=4+Math.floor(k*9);
+    for(let i=0;i<n;i++){const y=rnd(sd*7+i)*H,h=3+rnd(sd*11+i)*28,dx=(rnd(sd*13+i)-.5)*110*k;const s2=rnd(sd*17+i)<.5?a:b;
+      ctx.drawImage(s2,0,y*SF,W*SF,h*SF,dx,y,W,h);}
+    ctx.globalCompositeOperation='screen';ctx.globalAlpha=.35*k;ctx.drawImage(src,7*k,0,W,H);
+    for(let i=0;i<3;i++){ctx.fillStyle=i%2?'rgba(0,230,255,.5)':'rgba(255,30,120,.5)';ctx.fillRect(0,rnd(sd*19+i)*H,W,2+rnd(sd+i)*6);}
+    ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';}});
+def({id:'blur-transition',cat:'tr',ko:'블러 전환',en:'Blur Transition',dur:3.2,
+  desc:'초점이 나간 것처럼 화면이 흐려졌다가, 다음 장면에서 다시 또렷해집니다.',
+  use:'꿈이나 회상 장면, 정신이 아득해지는 연출, 부드럽고 몽환적인 연결.',
+  tl:AB(.5,[.25,.75],'블러'),
+  r:(t,T)=>{const bA=eIO(seg(t,.25,.5))*18,bB=(1-eIO(seg(t,.5,.75)))*18,aB=eIO(seg(t,.42,.58));
+    xform(A({},2+T),{blur:bA,s:1+bA/260});xform(B({},2+T),{blur:bB,s:1+bB/260,a:aB});if(!canFilter&&t>.25&&t<.75)badge('이 브라우저는 흐림 효과 미지원',0);}});
+def({id:'light-leak',cat:'tr',ko:'라이트 릭',en:'Light Leak',dur:3.4,
+  desc:'필름에 빛이 새어 들어온 것처럼 따뜻한 빛 번짐이 지나가고, 가장 밝은 순간에 장면이 바뀝니다.',
+  use:'웨딩, 여행, 감성 브이로그처럼 따뜻하고 아날로그한 분위기.',
+  tl:AB(.5,[.2,.8],'라이트 릭'),
+  r:(t,T)=>{put(t<.5?A({},2+T):B({},2+T));const u=seg(t,.2,.8),k=Math.sin(Math.PI*u);if(k<=0)return;
+    ctx.globalCompositeOperation='screen';
+    let x=lerp(-160,W+160,u),g=ctx.createRadialGradient(x,H*.35,0,x,H*.35,430);
+    g.addColorStop(0,`rgba(255,190,100,${k})`);g.addColorStop(.4,`rgba(255,95,70,${.75*k})`);g.addColorStop(1,'rgba(255,60,60,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    x=lerp(W+120,-120,u);g=ctx.createRadialGradient(x,H*.85,0,x,H*.85,300);g.addColorStop(0,`rgba(255,130,190,${.8*k})`);g.addColorStop(1,'rgba(255,130,190,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation='source-over';veil('#FFF3E0',.55*Math.pow(k,4));}});
+def({id:'invisible-cut',cat:'tr',ko:'인비저블 컷',en:'Invisible Cut · Hidden Cut',dur:3.4,
+  desc:'기둥, 벽, 지나가는 사람처럼 화면을 꽉 가리는 물체가 지나가는 순간 몰래 장면을 바꿉니다.',
+  use:'여러 번 찍은 걸 한 번에 찍은 것(원테이크)처럼 보이게 할 때, 장소를 티 나지 않게 바꿀 때.',
+  tl:AB(.5,[.43,.52],'가림'),
+  r:(t,T)=>{const p=seg(t,.15,.85),cam={x:lerp(-80,80,p)};put(t<.5?A(cam,2+T):B(cam,2+T));
+    const xL=lerp(W+10,-1.35*W,p),w=1.2*W;if(xL>W||xL+w<0)return;
+    const g=ctx.createLinearGradient(xL,0,xL+w,0);g.addColorStop(0,'#101216');g.addColorStop(.08,'#2A2D34');g.addColorStop(.5,'#33363E');g.addColorStop(.92,'#26292F');g.addColorStop(1,'#0E1014');
+    ctx.fillStyle=g;ctx.fillRect(xL,0,w,H);ctx.fillStyle='rgba(0,0,0,.25)';for(let i=1;i<6;i++)ctx.fillRect(xL+i*w/6,0,2,H);}});
+def({id:'match-cut',cat:'tr',ko:'매치 컷',en:'Match Cut',dur:4,
+  desc:'모양·위치·움직임이 닮은 두 장면을 이어 붙입니다. 예시에서는 낮의 해가 같은 자리의 밤의 달로 바뀌어요.',
+  use:'시간을 훌쩍 건너뛸 때, 두 장면의 의미를 연결할 때. 기억에 남는 전환을 만들 수 있어요.',
+  tl:AB(.5),
+  r:(t,T)=>{const p=t<.5?eIO(seg(t,.05,.5)):1-eIO(seg(t,.5,.95));const cam={zoom:1+5*p,pan:110*p,tilt:115*p};put(t<.5?A(cam,2+T):B(cam,2+T));}});
+def({id:'jump-cut',cat:'tr',ko:'점프 컷',en:'Jump Cut',dur:4,
+  desc:'같은 앵글로 찍은 영상의 중간을 잘라내서 인물이 순간이동하듯 툭툭 튑니다.',
+  use:'유튜브 토크 영상에서 말 사이 공백을 없앨 때, 시간을 압축할 때, 불안한 분위기를 낼 때.',
+  tl:{v1:[['A',0,.25,'a'],['A',.25,.5,'a'],['A',.5,.75,'a'],['A',.75,1,'a']],a1:[['A 소리',0,.25,'aa'],['A 소리',.25,.5,'aa'],['A 소리',.5,.75,'aa'],['A 소리',.75,1,'aa']],marks:[.25,.5,.75]},
+  r:(t,T,dur)=>{const i=Math.min(3,Math.floor(t*4));put(A({pos:[0,1.5,5],look:[0,1.15,0],fov:[38,34,38,32][i]},2+i*2.3+(T-i*dur/4),{px:[-1,.6,-.25,1.1][i]}));}});
+def({id:'j-cut',cat:'tr',ko:'J컷',en:'J-Cut',dur:4,
+  desc:'다음 장면의 소리가 화면보다 먼저 들려옵니다. 타임라인에서 오디오가 영상보다 앞으로 튀어나온 모양이 J를 닮았어요.',
+  use:'다음 장면을 소리로 미리 예고하며 자연스럽게 넘어갈 때. 인터뷰나 다큐에서 자주 써요.',
+  tl:{v1:[['A · 들판',0,.6,'a'],['B · 도시',.6,1,'b']],a1:[['A 소리',0,.35,'aa'],['B 소리',.35,1,'ab']],marks:[.6]},
+  r:(t,T)=>{put(t<.6?A({},2+T):B({},2+T));audioBadge(t<.35?'A':'B',T);}});
+def({id:'l-cut',cat:'tr',ko:'L컷',en:'L-Cut',dur:4,
+  desc:'화면은 다음 장면으로 바뀌었는데 앞 장면의 소리가 계속 이어집니다. 오디오가 뒤로 길게 남아 L 모양이 돼요.',
+  use:'대화 중 듣는 사람의 표정을 보여줄 때, 내레이션이나 음악을 다음 장면까지 이어갈 때.',
+  tl:{v1:[['A · 들판',0,.4,'a'],['B · 도시',.4,1,'b']],a1:[['A 소리',0,.7,'aa'],['B 소리',.7,1,'ab']],marks:[.4]},
+  r:(t,T)=>{put(t<.4?A({},2+T):B({},2+T));audioBadge(t<.7?'A':'B',T);}});
+
+/* ---- speed ---- */
+const rampRate=u=>1-.85*Math.exp(-Math.pow((u-.5)/.15,2));
+const rampCum=(()=>{const n=400,a=[0];for(let i=1;i<=n;i++)a.push(a[i-1]+rampRate((i-.5)/n)/n);return u=>a[Math.round(clamp(u)*n)];})();
+const SPD={pos:[0,1.45,6],look:[0,1.05,0]};
+def({id:'slow-motion',cat:'spd',ko:'슬로 모션',en:'Slow Motion',dur:6,
+  desc:'보통보다 훨씬 많은 프레임(초당 60·120장 이상)으로 찍은 뒤 느리게 재생합니다. 예시는 같은 점프를 정상 속도 → 0.25배로 보여줘요.',
+  use:'결정적인 순간, 감성적인 장면, 스포츠와 액션의 하이라이트.',
+  tl:{v1:[['A 1×',0,.35,'a'],['A 0.25×',.35,1,'a']],a1:[['A 소리',0,1,'aa']],marks:[.35]},
+  r:(t,T)=>{if(t<.35){put(A(SPD,T,{jump:1}));badge('1× 정상 속도',0,'#8E96A8');}else{put(A(SPD,2+seg(t,.35,1)*.975,{jump:1}));badge('0.25× 슬로 모션',0,'#3D9BE0');}}});
+def({id:'timelapse',cat:'spd',ko:'타임랩스',en:'Time-lapse · Fast Motion',dur:5,
+  desc:'몇 시간을 몇 초로 압축합니다. 구름이 빠르게 흐르고, 해가 지면서 그림자가 길어지다 밤이 와요.',
+  use:'시간이 흐른 것을 보여줄 때, 풍경·도시·하늘, 오래 걸리는 작업 과정.',
+  tl:{v1:[['A × 40',0,1,'a']]},
+  r:(t,T)=>{put(A({},2+T*40,{tod:eIO(seg(t,.05,.95)),noPerson:1,noBall:1}));badge('× 40 배속',0,'#F0B43C');}});
+def({id:'hyperlapse',cat:'spd',ko:'하이퍼랩스',en:'Hyperlapse',dur:5,
+  desc:'타임랩스를 찍으면서 카메라도 조금씩 이동시켜 시간과 공간이 함께 흐르게 합니다.',
+  use:'도시 여행, 장소 소개, 화려한 인트로.',
+  tl:{v1:[['A × 30 + 이동',0,1,'a']],kf:[0,1]},
+  r:(t,T)=>{put(A({x:lerp(-320,320,t)},2+T*30,{tod:.55*t,noPerson:1,noBall:1}));badge('× 30 + 이동',0,'#F0B43C');}});
+def({id:'speed-ramp',cat:'spd',ko:'스피드 램프',en:'Speed Ramp',dur:5,
+  desc:'한 클립 안에서 속도를 빠르게 → 아주 느리게 → 다시 빠르게, 곡선처럼 바꿉니다.',
+  use:'액션의 결정적 순간만 늘려 보여줄 때, 음악 비트에 맞춘 편집, 스포츠 하이라이트.',
+  tl:{v1:[['A 속도 곡선',0,1,'a']],a1:[['A 소리',0,1,'aa']],kf:[.25,.5,.75]},
+  r:(t,T,dur)=>{put(A(SPD,.57+dur*rampCum(t),{jump:1}));const r=rampRate(t);badge(`${r.toFixed(2)}×`,0,'#3D9BE0');
+    const bx=W-150,by=44,bw=136,bh=60;ctx.fillStyle='rgba(6,8,12,.6)';rr(ctx,bx,by,bw,bh,8);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.beginPath();for(let i=0;i<=60;i++){const u=i/60;const x=bx+10+u*(bw-20),y=by+10+(1-rampRate(u))/.85*(bh-26);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
+    ctx.fillStyle='#F0C24B';ctx.beginPath();circ(ctx,bx+10+t*(bw-20),by+10+(1-r)/.85*(bh-26),4);ctx.fill();
+    text('속도',bx+10,by+bh-5,{size:10,weight:500,color:'#AEB5C2'});}});
+def({id:'freeze-frame',cat:'spd',ko:'프리즈 프레임',en:'Freeze Frame',dur:5,
+  desc:'움직이던 영상을 한 장면에서 딱 멈춰 정지 화면으로 만듭니다. 보통 자막이나 효과음과 함께 써요.',
+  use:'인물 소개(“이게 바로 나야”), 엔딩, 결정적 순간을 강조할 때.',
+  tl:{v1:[['A',0,.5,'a'],['정지 화면',.5,1,'a']],v2:[['자막',.58,1,'g']],a1:[['A 소리',0,.5,'aa']],marks:[.5]},
+  r:(t,T,dur)=>{const tf=.5;if(t<tf){put(A(SPD,T,{jump:1}));return;}
+    const buf=A(SPD,tf*dur,{jump:1});xform(buf,{s:1+.06*eOut(seg(t,tf,tf+.15))});
+    ctx.globalCompositeOperation='saturation';ctx.globalAlpha=.85;ctx.fillStyle='#808080';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+    veil('#fff',1-seg(t,tf,tf+.07));const a=eOut(seg(t,tf+.08,tf+.2));
+    if(a>0){ctx.globalAlpha=a;ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,H-74,W,74);text('그래, 이게 나야.',30,H-30,{size:28,weight:700});ctx.globalAlpha=1;}
+    badge('FREEZE',0,'#E0533D');}});
+def({id:'reverse',cat:'spd',ko:'리버스',en:'Reverse · Rewind',dur:5,
+  desc:'영상을 거꾸로 재생합니다. 굴러가던 공과 흘러가던 구름이 되돌아가요.',
+  use:'되감기 연출, 마법 같은 효과, 회상 장면으로 들어갈 때.',
+  tl:{v1:[['A 정방향',0,.45,'a'],['A 역방향',.45,1,'a']],marks:[.45]},
+  r:(t,T,dur)=>{const fw=.45*dur,st=t<.45?2+T:2+fw-(T-fw)*fw/(dur-fw);put(A(SPD,st,{cloud:30}));
+    if(t<.45)badge('▶ 정방향',0,'#8E96A8');else{badge('◀◀ 리버스',0,'#E0533D');ctx.fillStyle='rgba(255,255,255,.08)';for(let y=(T*140)%9;y<H;y+=9)ctx.fillRect(0,y,W,1);}}});
+def({id:'stop-motion',cat:'spd',ko:'스톱 모션 / 저프레임',en:'Stop Motion · Low Frame Rate',dur:5,
+  desc:'1초에 보여주는 장면 수(프레임)를 확 줄여서 뚝뚝 끊기듯 움직입니다.',
+  use:'손으로 만든 듯한 아날로그 감성, 코믹한 느낌, 클레이 애니메이션 같은 효과.',
+  tl:{v1:[['A 30fps',0,.45,'a'],['A 6fps',.45,1,'a']],marks:[.45]},
+  r:(t,T)=>{const s=2+T;put(A(SPD,t<.45?s:Math.floor(s*6)/6,{jump:1}));badge(t<.45?'30 fps 부드러움':'6 fps 뚝뚝',0,t<.45?'#8E96A8':'#F0B43C');}});
+
+/* ---- motion graphics ---- */
+def({id:'easing',cat:'mg',ko:'이징',en:'Easing · Ease In / Ease Out',dur:3.4,
+  desc:'움직임에 가속과 감속을 주는 것. 점은 같은 시간 간격마다 찍은 위치라서, 간격이 넓으면 빠르고 좁으면 느린 구간이에요.',
+  use:'모든 모션 그래픽의 기본. 일정한 속도(리니어)는 기계적이고, 이즈 인아웃은 자연스럽게 느껴져요.',
+  tl:GFX(),
+  r:(t)=>{stage();const rows=[['리니어','Linear',p=>p,'#8E96A8'],['이즈 인','Ease In',eIn,CLR.red],['이즈 아웃','Ease Out',eOut,CLR.blue],['이즈 인아웃','Ease In-Out',eIO,CLR.gold]];
+    const x0=200,x1=590,p=seg(t,.12,.75);
+    rows.forEach(([ko,en,f,col],i)=>{const y=76+i*66;text(ko,24,y-2,{size:15,weight:700});text(en,24,y+15,{size:11,weight:500,font:MONO,color:'#8E96A8'});
+      ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(x0,y+3,x1-x0,2);
+      ctx.fillStyle=col;ctx.globalAlpha=.55;for(let k=0;k<=12;k++){const q=k/12;if(q<=p+1e-6){ctx.beginPath();circ(ctx,x0+(x1-x0)*f(q),y+4,3);ctx.fill();}}
+      ctx.globalAlpha=1;const x=x0+(x1-x0)*f(p);rr(ctx,x-12,y-8,24,24,5);ctx.fill();});}});
+def({id:'overshoot',cat:'mg',ko:'오버슈트 / 바운스',en:'Overshoot · Bounce',dur:3.2,
+  desc:'목표 크기나 위치를 살짝 지나쳤다가 돌아오거나(오버슈트), 바닥에 튕기며 멈춥니다(바운스).',
+  use:'귀엽고 경쾌한 느낌, 아이콘·스티커·자막이 톡 튀어나오는 등장.',
+  tl:GFX(),
+  r:(t)=>{stage();text('오버슈트',190,40,{size:14,weight:700,align:'center'});text('Overshoot',190,58,{size:11,weight:500,font:MONO,color:'#8E96A8',align:'center'});
+    text('바운스',470,40,{size:14,weight:700,align:'center'});text('Bounce',470,58,{size:11,weight:500,font:MONO,color:'#8E96A8',align:'center'});
+    const s=eBack(seg(t,.12,.45));ctx.save();ctx.translate(190,200);ctx.scale(s,s);ctx.fillStyle=CLR.red;rr(ctx,-64,-42,128,84,14);ctx.fill();text('NEW!',0,10,{size:28,weight:700,font:MONO,align:'center'});ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(400,292,140,2);
+    const y=lerp(80,272,eBounce(seg(t,.12,.62)));ctx.fillStyle=CLR.gold;ctx.beginPath();circ(ctx,470,y,20);ctx.fill();}});
+def({id:'stagger',cat:'mg',ko:'스태거',en:'Stagger · Offset',dur:3.4,
+  desc:'여러 요소를 한꺼번에가 아니라 조금씩 시간차를 두고 차례로 움직입니다.',
+  use:'목록이 하나씩 나타날 때, 그래프 막대, 글자가 한 자씩 등장할 때.',
+  tl:GFX(),
+  r:(t)=>{stage();text('스태거 · Stagger',W/2,44,{size:14,weight:700,align:'center'});const hs=[.55,.8,.45,.95,.7,.6,.85,.5,.75,.65];
+    hs.forEach((h,i)=>{const pin=eBack(seg(t,.08+i*.045,.3+i*.045)),pout=eIn(seg(t,.7+i*.022,.82+i*.022));const hh=Math.max(0,h*200*pin*(1-pout));
+      ctx.fillStyle=`hsl(${200+i*14},70%,62%)`;rr(ctx,112+i*44,300-hh,30,hh,5);ctx.fill();});
+    ctx.fillStyle='rgba(255,255,255,.2)';ctx.fillRect(100,301,450,2);}});
+def({id:'mask-reveal',cat:'mg',ko:'마스크 리빌',en:'Mask Reveal',dur:3.6,
+  desc:'보이지 않는 틀(마스크) 뒤에 숨어 있던 글자나 이미지가 밀려 올라오며 드러납니다.',
+  use:'깔끔한 타이틀, 자막 등장, 고급스럽고 정돈된 느낌의 영상.',
+  tl:GFX(),
+  r:(t)=>{stage();const lines=['숨어 있던 글자가','아래에서 올라온다'];
+    lines.forEach((s,i)=>{const yc=150+i*58,p=eOut(seg(t,.1+i*.12,.42+i*.12)),q=eIn(seg(t,.8+i*.04,.93+i*.04));
+      ctx.save();ctx.beginPath();ctx.rect(0,yc-30,W,58);ctx.clip();text(s,W/2,yc+14+(1-p)*60-q*60,{size:38,weight:700,align:'center',color:i?'#F0B43C':'#fff'});ctx.restore();});
+    const w=240*eIO(seg(t,.05,.35))*(1-eIO(seg(t,.85,.97)));ctx.fillStyle=CLR.red;ctx.fillRect(W/2-w/2,268,w,4);
+    if(t<.35){ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(255,255,255,.25)';ctx.strokeRect(60.5,120.5,W-121,116);ctx.setLineDash([]);text('마스크 영역',66,114,{size:10,weight:500,color:'#8E96A8'});}}});
+def({id:'kinetic-type',cat:'mg',ko:'키네틱 타이포그래피',en:'Kinetic Typography',dur:4,
+  desc:'글자 자체가 떨어지고, 커지고, 미끄러지고, 회전하며 말의 리듬과 감정을 전달합니다.',
+  use:'가사 영상, 광고 카피, 오프닝 타이틀, 강조하고 싶은 한 문장.',
+  tl:GFX(),
+  r:(t)=>{stage();ctx.font=`700 46px ${KR}`;const L=[['말이','움직이면'],['메시지가','살아난다']],gap=16;let i=0;
+    L.forEach((ws,li)=>{const widths=ws.map(w=>ctx.measureText(w).width),tot=widths.reduce((a,b)=>a+b,0)+gap*(ws.length-1);let x=(W-tot)/2;const y=li?232:166;
+      ws.forEach((w,wi)=>{const cx=x+widths[wi]/2,cy=y-16,k=i;let dx=0,dy=0,s=1,r=0,a=1,col='#fff';
+        if(k===0){const p=seg(t,.06,.28);dy=-170*(1-eBounce(p));a=p>0?1:0;}
+        if(k===1){const p=seg(t,.24,.42);s=lerp(3,1,eOut(p));a=eOut(p);col=CLR.gold;}
+        if(k===2){const p=seg(t,.4,.58);dx=-280*(1-eOut(p));a=p;}
+        if(k===3){const p=seg(t,.56,.78);s=Math.max(0,eBack(p));r=(1-p)*-.6;col=CLR.red;}
+        if(a>0&&s>0){ctx.save();ctx.globalAlpha=clamp(a);ctx.translate(cx+dx,cy+dy);ctx.rotate(r);ctx.scale(s,s);text(w,0,16,{size:46,weight:700,align:'center',color:col});ctx.restore();}
+        x+=widths[wi]+gap;i++;});});}});
+def({id:'lower-third',cat:'mg',ko:'로어 서드',en:'Lower Third',dur:5,
+  desc:'화면 아래쪽 3분의 1 지점에 이름, 직함, 장소 같은 정보를 띄우는 자막 바입니다.',
+  use:'인터뷰에서 인물을 소개할 때, 장소나 날짜 정보, 뉴스·다큐멘터리.',
+  tl:{v2:[['로어 서드',.12,.92,'g']],v1:[['A · 들판',0,1,'a']],a1:[['A 소리',0,1,'aa']]},
+  r:(t,T)=>{put(A({pos:[-1.2,1.55,4.6],look:[-.9,1.3,0]},2+T,{noBall:1}));const ga=1-seg(t,.35,.45);
+    if(ga>0){ctx.globalAlpha=ga;ctx.setLineDash([5,5]);ctx.strokeStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.moveTo(0,240.5);ctx.lineTo(W,240.5);ctx.stroke();ctx.setLineDash([]);
+      text('화면 아래 1/3',W-14,234,{size:11,weight:600,align:'right'});ctx.globalAlpha=1;}
+    const out=eIn(seg(t,.8,.92)),w=250*eOut(seg(t,.12,.3))*(1-out),x=28,y=266;
+    if(w>1){ctx.fillStyle='rgba(12,15,22,.85)';ctx.fillRect(x,y,w,52);ctx.fillStyle=CLR.red;ctx.fillRect(x,y,6,52*eOut(seg(t,.1,.2)));
+      ctx.save();ctx.beginPath();ctx.rect(x+6,y,w-6,52);ctx.clip();
+      text('홍길동',x+20,y+24+(1-eOut(seg(t,.18,.34)))*30+out*30,{size:19,weight:700});
+      text('여행 크리에이터 · 강원도',x+20,y+43+(1-eOut(seg(t,.22,.38)))*30+out*30,{size:12,weight:500,color:'#C9CED8'});ctx.restore();}}});
+def({id:'morph',cat:'mg',ko:'모프',en:'Morph · Shape Tween',dur:4,
+  desc:'한 모양이 다른 모양으로 끊김 없이 자연스럽게 변형됩니다.',
+  use:'로고 애니메이션, 아이콘이 다른 아이콘으로 바뀔 때, 인포그래픽.',
+  tl:GFX(),
+  r:(t)=>{stage();const S=[th=>1,th=>.8/Math.max(Math.abs(Math.cos(th)),Math.abs(Math.sin(th))),th=>.5+.5*Math.pow((1+Math.cos(5*(th+Math.PI/2)))/2,2.6)];
+    const cols=[CLR.blue,CLR.gold,CLR.red],names=['원','사각형','별'];
+    const keys=[[0,.12,.32,1],[1,.44,.64,2],[2,.76,.94,0]];let from=0,to=0,p=0;
+    for(const [a,s,e,b] of keys){if(t>=s){from=a;to=b;p=eIO(seg(t,s,e));}}
+    const R=92,cx=W/2,cy=H/2-14,rot=t*Math.PI*.6;ctx.fillStyle=mixc(cols[from],cols[to],p);ctx.beginPath();
+    for(let i=0;i<=160;i++){const th=i/160*TAU,r=R*lerp(S[from](th),S[to](th),p);const x=cx+Math.cos(th+rot)*r,y=cy+Math.sin(th+rot)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.fill();
+    const cur=p>.5?to:from;names.forEach((n,i)=>text(n,W/2+(i-1)*80,H-28,{size:14,weight:700,align:'center',color:i===cur?'#fff':'#5A6070'}));
+    text('→',W/2-40,H-28,{size:13,weight:500,align:'center',color:'#5A6070'});text('→',W/2+40,H-28,{size:13,weight:500,align:'center',color:'#5A6070'});}});
+
+/* ---- combinations ---- */
+CATS.push({id:'combo',ko:'추천 조합',en:'Recommended Combos',note:'목적별로 자주 쓰는 조합이에요. 오프닝 → 하이라이트 → 리액션 → 엔딩 순서로 정리했어요. 프롬프트에 순서와 시간을 함께 적으면 원하는 결과가 잘 나와요.'});
+camDef({id:'combo-push-rack',cat:'combo',parts:'푸시 인 + 랙 포커스',ko:'꽃 너머로 다가가며 인물에게 초점',en:'Push In + Rack Focus',dur:4.4,kf:[.05,.35,.6,.95],dx:{flower:1},
+  desc:'앞의 꽃을 스치듯 천천히 다가가는 동안, 초점이 꽃에서 인물로 넘어갑니다.',
+  use:'감성적인 오프닝, 인물 소개, 디테일에서 주인공으로 시선을 넘길 때.',
+  cam:t=>{const z=lerp(7.9,5.9,P(t,.05,.95)),cp=[-.35,.72,z],dN=Math.hypot(cp[0]+1.15,cp[1]-.45,cp[2]-5.5),dS=Math.hypot(cp[0],cp[1]-1,cp[2]);
+    return {pos:cp,look:[-.4,.85,0],focus:1/lerp(1/dN,1/dS,eIO(seg(t,.35,.6)))};},
+  post:(t,T,sp)=>{if(canFilter)badge(sp.focus<3?'초점: 꽃':'초점: 인물',0,'#F0C24B');}});
+camDef({id:'combo-bullet',cat:'combo',parts:'아크 + 슬로 모션',ko:'불릿 타임',en:'Arc + Slow Motion · Bullet Time',dur:4.4,speed:.2,st0:2,kf:[0,1],
+  desc:'점프한 인물이 공중에서 거의 멈춘 듯 느려지는 동안 카메라는 주위를 빠르게 돌아갑니다.',
+  use:'액션의 하이라이트, 스포츠, 뮤직비디오의 결정적 순간.',
+  cam:t=>orb(lerp(-1.3,1.3,eIO(t)),.12,5.2,[0,1.3,0]),opt:{jump:1,noBall:1},post:()=>badge('0.2× 슬로 모션',0,'#3D9BE0')});
+camDef({id:'combo-crane-arc',cat:'combo',parts:'크레인 다운 + 아크',ko:'하늘에서 내려오며 돌아 들어가기',en:'Crane Down + Arc',dur:5,
+  desc:'높은 곳에서 들판을 내려다보다가 원을 그리며 내려와 인물 옆에서 멈춥니다.',
+  use:'영상의 첫 장면, 장소와 주인공을 한 번에 소개할 때, 드론 촬영.',
+  cam:t=>{const p=P(t,.05,.95);return orb(lerp(-1.4,.5,p),lerp(1.05,.06,p),lerp(15,5.5,p),[0,lerp(.6,1.2,p),0]);}});
+camDef({id:'combo-hero-vertigo',cat:'combo',parts:'로우 앵글 + 달리 줌',ko:'올려다보며 배경이 일그러지기',en:'Low Angle + Dolly Zoom',dur:4.4,view:'side',kf:[.1,.85],
+  desc:'바닥에 가까운 낮은 시점에서 인물을 올려다보며, 인물 크기는 그대로 둔 채 배경만 늘어나게 합니다.',
+  use:'주인공이 각성하거나 결심하는 순간, 공포 장면, 강렬한 인물 소개.',
+  cam:t=>{const p=eIO(seg(t,.1,.85)),d=lerp(2.6,9,p);return {pos:[0,.3,d],look:[0,1.35,0],fov:2*Math.atan(Math.tan(22*D2R)*2.6/d)/D2R};},opt:{noBall:1}});
+const rwRate=u=>u<.2?1:lerp(1,.15,eIO(seg(u,.2,.42)));
+const rwCum=(()=>{const n=300,a=[0];for(let i=1;i<=n;i++)a.push(a[i-1]+rwRate((i-.5)/n)/n);return u=>a[Math.round(clamp(u)*n)];})();
+def({id:'combo-ramp-whip',cat:'combo',parts:'스피드 램프 + 휩 팬',ko:'느려지다가 휙 넘어가기',en:'Speed Ramp + Whip Pan',dur:4,
+  desc:'점프 동작이 점점 느려지다가 정점에서 카메라가 휙 돌아가며 밤의 도시로 넘어갑니다.',
+  use:'여행·스포츠 하이라이트, 숏폼 인트로, 장소가 바뀌는 순간.',
+  tl:{v1:[['A 램프',0,.55,'a'],['B · 도시',.55,1,'b']],a1:[['음악',0,1,'am']],fx:[[.45,.7,'휩 팬']],kf:[.2,.42]},
+  r:(t,T,dur)=>{const pa=x=>1000*eIn(seg(x,.45,.55)),pb=x=>-1000*(1-eOut(seg(x,.55,.7)));const a=t<.55,f=a?pa:pb,d=1/(30*dur);
+    const len=Math.min(460,Math.abs(f(Math.min(t+d,a?.55:1))-f(t))*1.3);
+    const st=1.2+dur*rwCum(Math.min(t,.45))+(t>.45?(t-.45)*dur*.15:0);
+    smearX(a?A({pan:f(t)},st,{jump:1}):B({pan:f(t)},2+T),len);badge(a?`${rwRate(Math.min(t,.45)).toFixed(2)}×`:'1×',0,'#3D9BE0');}});
+
+/* ---- more recommended combinations ---- */
+camDef({id:'combo-orbit-punch',cat:'combo',parts:'오빗 + 펀치 인',ko:'오빗 비트 펀치',en:'Orbit + Beat Punch-in',dur:4,
+  desc:'인물 주위를 도는 동안 음악 박자마다 화면이 툭 확대돼요. 회전감에 리듬이 더해집니다.',
+  use:'댄스·패션 숏폼, 뮤직비디오, 제품 소개 릴스.',
+  tl:MUSIC(4,[['A 오빗',0,1,'a']],{kf:[0,1]}),
+  cam:(t,T)=>{const n=Math.floor(T/BEAT),S=[1,1.25,1,1.45],c=S[n%4],pv=S[(n+3)%4],s=lerp(pv,c,eOut(clamp((T%BEAT)/.07)));return orb(lerp(-1.2,1.2,t),.1,5.5,[0,1.25,0],fovZ(s));},
+  opt:{noBall:1},post:(t,T)=>beatMeter(T)});
+camDef({id:'combo-follow-crane',cat:'combo',parts:'팔로우 숏 + 크레인 업',ko:'드론 팔로우 리빌',en:'Follow Shot + Crane Up',dur:5,view:'side',kf:[0,.45,1],
+  desc:'걸어가는 인물을 뒤에서 따라가다가, 카메라가 위로 솟아오르며 앞에 펼쳐진 풍경을 보여줘요.',
+  use:'여행 영상 오프닝, 새로운 장소에 도착한 순간, 드론 촬영.',
+  cam:t=>{const wz=lerp(3,-6,t),p=eIO(seg(t,.42,1));return {pos:[.35,lerp(1.65,12,p),wz+lerp(3,7,p)],look:[0,lerp(1.2,2,p),wz-lerp(4,30,p)],fov:lerp(38,46,p)};},
+  opt:t=>({walk:{x:0,z:lerp(3,-6,t),face:Math.PI},noBall:1}),dxf:t=>({subj:{x:0,z:lerp(3,-6,t),face:Math.PI}})});
+const fvRate=u=>1-.82*Math.exp(-Math.pow((u-.62)/.12,2));
+const fvWarp=(()=>{const n=400,a=[0];for(let i=1;i<=n;i++)a.push(a[i-1]+fvRate((i-.5)/n)/n);return u=>a[Math.round(clamp(u)*n)]/a[n];})();
+const fpvCam=TECH.find(x=>x.id==='fpv-dive').cam;
+def({id:'combo-fpv-ramp',cat:'combo',parts:'FPV 다이브 + 스피드 램프',ko:'FPV 슬로 패스',en:'FPV Dive + Speed Ramp',dur:4.4,
+  desc:'드론이 빠르게 급강하하다가 인물 옆을 스치는 순간만 슬로 모션으로 늘어지고, 다시 빠르게 빠져나갑니다.',
+  use:'스포츠·익스트림, 자동차 광고, 아주 역동적인 인트로.',
+  tl:{v1:[['A FPV 램프',0,1,'a']],a1:[['음악',0,1,'am']],kf:[.45,.62,.8]},
+  r:(t,T,dur)=>{const w=fvWarp(t),sp=fpvCam(w);put(A(sp,2+w*dur,{jump:1}));const r=fvRate(t);badge(r<.7?`${r.toFixed(2)}× 슬로`:'1×',0,r<.7?'#3D9BE0':'#8E96A8');diag('side',sp,u=>fpvCam(fvWarp(u)),{dur});}});
+const pullCam=TECH.find(x=>x.id==='pull-back').cam;
+camDef({id:'combo-pullback-timelapse',cat:'combo',parts:'풀백 리빌 + 타임랩스',ko:'타임랩스 풀백',en:'Pull-back Reveal + Time-lapse',dur:5,view:'side',speed:30,
+  desc:'인물 얼굴에서 크게 멀어지는 동안 하늘이 타임랩스로 흘러 해가 지고 밤이 됩니다.',
+  use:'영상 엔딩, 하루를 마무리하는 장면, 여행 브이로그의 마지막 컷.',
+  cam:pullCam,opt:t=>({noBall:1,tod:.8*eIO(seg(t,.1,1))})});
+def({id:'combo-crash-shake',cat:'combo',parts:'크래시 줌 + 임팩트 셰이크',ko:'리액션 크래시 줌',en:'Crash Zoom + Impact Shake',dur:3,
+  desc:'얼굴로 순식간에 확 당긴 뒤, 도착하는 순간 화면이 쿵 흔들리며 번쩍여요.',
+  use:'예능 자막 리액션, 코미디, 깜짝 놀라는 순간.',
+  tl:{v1:[['A',0,1,'a']],a1:[['효과음',.38,.6,'am']],kf:[.35,.43],marks:[.43]},
+  r:(t,T,dur)=>{const cf=u=>{const p=eOut(seg(u,.35,.43)),land=u>.43?Math.exp(-(u-.43)*9):0;return {pos:BPOS,look:[0,lerp(1,1.62,p),0],fov:lerp(38,6.5,p),rot:shake(u*dur*5,land*3)};};
+    const sp=cf(t),b=t>.35&&t<.45?Math.sin(Math.PI*seg(t,.35,.45))*6:0;xform(A(sp,2+T,{noBall:1}),{blur:b,s:1+b*.01});
+    if(t>.43)veil('#fff',.4*Math.exp(-(t-.43)*30));if(t>.43&&t<.7)badge('!!',0,'#E0533D');diag('top',sp,cf,{dur});}});
+def({id:'combo-side-echo',cat:'combo',parts:'사이드 트래킹 + 잔상',ko:'잔상 트래킹',en:'Side Tracking + Echo',dur:4.4,
+  desc:'점프하며 달려가는 인물과 나란히 움직이는 동안, 인물 뒤로 반투명 잔상이 꼬리처럼 따라와요.',
+  use:'댄스, 러닝·스포츠, 에너지 있는 뮤직비디오.',
+  tl:{v1:[['A + 잔상',0,1,'a']],a1:[['음악',0,1,'am']],kf:[0,1]},
+  r:(t,T,dur)=>{const wxAt=s=>lerp(-5,4,(s-2)/dur),st=2+T,wx=wxAt(st),cam={pos:[wx,1.4,4.6],look:[wx,1.1,0]};
+    put(A(cam,st,{walk:{x:wx,z:0,face:Math.PI/2},jump:1,noBall:1}));
+    for(let i=1;i<=(THUMB?3:5);i++){const s=st-i*.09;shot('A',cc,cam,s,{ghost:1,jump:1,walk:{x:wxAt(s),z:0,face:Math.PI/2}});put(bufC,.4*(1-i/6));}}});
+const helixCam=TECH.find(x=>x.id==='helix').cam;
+camDef({id:'combo-helix-letterbox',cat:'combo',parts:'드론 헬릭스 + 시네마틱 바',ko:'시네마틱 헬릭스 엔딩',en:'Helix + Letterbox',dur:6,
+  desc:'드론이 인물 주위를 돌며 하늘로 올라가는 동안 위아래 검은 띠가 들어와 영화의 마지막 장면처럼 마무리돼요.',
+  use:'여행 영상 엔딩, 웨딩, 브랜드 필름의 마지막 장면.',
+  cam:helixCam,post:t=>{const bh=46*eIO(seg(t,.05,.3));ctx.fillStyle='#000';ctx.fillRect(0,0,W,bh);ctx.fillRect(0,H-bh,W,bh);}});
+
+/* ================= card copy: one-line summary, opposite, prompts (ko / en) ================= */
+const CAT_TAGS={cam:'인물 · 제품 · 풍경',subj:'인물 중심',cam2:'역동 · 장비',dyn:'숏폼 · 뮤직비디오',shot:'인물 · 구도',tr:'장면 전환',spd:'편집 · 속도',mg:'텍스트 · 도형',combo:'조합'};
+const META={
+'pan':{s:'제자리에서 고개를 좌우로',o:'오른쪽에서 왼쪽으로 팬',k:'카메라 위치는 고정하고 4초 동안 왼쪽에서 오른쪽으로 천천히 팬해줘. 높이와 기울기는 그대로 두고, 인물이 화면 중앙을 지나가게 해줘.',e:'Locked-off camera position. Slow pan from left to right over 4 seconds, keeping height and tilt unchanged. The subject passes through the center of the frame.'},
+'tilt':{s:'제자리에서 고개를 위아래로',o:'틸트 다운',k:'카메라 위치는 고정하고 4초 동안 발밑의 땅에서 하늘까지 천천히 틸트 업해줘. 좌우 방향은 바꾸지 마.',e:'Fixed camera position. Slow tilt up from the ground to the sky over 4 seconds. No horizontal movement.'},
+'zoom':{s:'렌즈만 당겨서 확대',o:'줌 아웃',k:'카메라는 움직이지 말고 렌즈 줌만 써서 1.5초 동안 인물 쪽으로 2.5배 줌 인한 뒤, 잠시 멈췄다가 원래 화각으로 줌 아웃해줘.',e:'The camera stays still; use only the lens. Zoom in 2.5x toward the subject over 1.5 seconds, hold briefly, then zoom back out to the original framing.'},
+'dolly':{s:'카메라가 직접 다가가기',o:'달리 아웃',k:'카메라를 레일 위에서 인물 쪽으로 5m 천천히 전진(달리 인)시켰다가 다시 뒤로 빠져줘. 카메라 각도는 고정하고 줌은 쓰지 마.',e:'Dolly the camera forward toward the subject on a track, about 5 meters, then dolly back out. Keep the camera angle fixed and do not zoom.'},
+'zoom-vs-dolly':{s:'크기는 같아도 원근감이 다르다',k:'화면을 좌우로 나눠서 왼쪽은 렌즈 줌 인, 오른쪽은 달리 인으로 같은 인물을 같은 크기까지 키워줘. 배경 크기 변화의 차이가 잘 보이게.',e:'Split screen: the left side zooms in with the lens, the right side dollies in, both ending with the subject at the same size. Make the difference in background scale clearly visible.'},
+'truck':{s:'옆으로 평행 이동',o:'오른쪽에서 왼쪽으로 트럭',k:'카메라를 인물과 평행하게 4초 동안 왼쪽에서 오른쪽으로 7m 수평 이동(트럭)해줘. 회전하지 말고 정면만 보게 해서 가까운 풀과 먼 산의 시차가 보이게.',e:'Truck the camera sideways from left to right, about 7 meters over 4 seconds, parallel to the subject. No rotation, keep facing forward so the foreground grass and distant mountains show parallax.'},
+'pan-vs-truck':{s:'돌리기 vs 옮기기',k:'화면을 좌우로 나눠서 왼쪽은 제자리 팬, 오른쪽은 옆으로 이동하는 트럭으로 같은 장면을 4초 동안 보여줘.',e:'Split screen over 4 seconds: the left side pans from a fixed position, the right side trucks sideways across the same scene.'},
+'pedestal':{s:'각도 그대로 높이만 위아래로',o:'페데스탈 다운',k:'카메라 각도는 수평으로 유지한 채 무릎 높이에서 4m 높이까지 4초 동안 수직으로 올려줘(페데스탈 업).',e:'Keep the camera level and raise it vertically from knee height to about 4 meters over 4 seconds (pedestal up).'},
+'tilt-vs-pedestal':{s:'고개 들기 vs 몸 올리기',k:'화면을 좌우로 나눠서 왼쪽은 제자리 틸트 업, 오른쪽은 각도를 유지한 페데스탈 업으로 4초 동안 비교해줘.',e:'Split screen over 4 seconds: the left side tilts up from a fixed position, the right side pedestals up while staying level.'},
+'crane':{s:'높이 솟아올라 내려다보기',o:'크레인 다운',k:'지미집 크레인으로 눈높이에서 시작해 4초 동안 9m 높이까지 올라가며 인물을 계속 내려다보게 해줘. 끝에는 주변 들판 전체가 보이게.',e:'Crane shot: start at eye level and rise to about 9 meters over 4 seconds while angling down to keep the subject in frame. End on a wide view of the whole meadow.'},
+'arc':{s:'피사체를 중심에 두고 반원 돌기',o:'오른쪽에서 왼쪽으로 아크',k:'인물을 화면 중앙에 고정한 채 7.5m 거리에서 왼쪽에서 오른쪽으로 약 90도 반원을 그리며 4초 동안 돌아줘.',e:'Arc shot: keep the subject centered while the camera circles from left to right about 90 degrees at 7.5 meters over 4 seconds.'},
+'roll':{s:'카메라를 옆으로 기울이기',o:'수평 복귀',k:'카메라를 2초 동안 시계 반대 방향으로 약 17도 기울인 뒤 그 각도로 고정해줘(더치 앵글).',e:'Roll the camera counterclockwise about 17 degrees over 2 seconds, then hold that tilted angle (Dutch angle).'},
+'orbit-360':{s:'피사체 주위를 한 바퀴',k:'인물을 중심에 두고 6m 거리, 눈높이보다 약간 높은 곳에서 6초 동안 일정한 속도로 360도 돌아줘. 인물은 항상 화면 중앙에.',e:'360-degree orbit around the subject at 6 meters, slightly above eye level, at a constant speed over 6 seconds. Keep the subject centered at all times.'},
+'spiral-in':{s:'돌면서 다가가기',o:'오빗 풀 아웃',k:'인물 주위를 90도 돌면서 동시에 12m에서 3m까지 다가가줘. 5초 동안, 끝에서 부드럽게 감속하고 마지막은 상반신 클로즈업.',e:'Orbit 90 degrees around the subject while pushing in from 12 m to 3 m over 5 seconds, easing out at the end into a medium close-up.'},
+'helix':{s:'돌면서 하늘로 올라가기',o:'헬릭스 다운',k:'드론이 인물 주위를 270도 돌면서 5m에서 17m 높이까지 나선형으로 상승해줘. 6초 동안 카메라는 계속 인물을 내려다보게.',e:'Drone helix: circle the subject 270 degrees while spiraling up from 5 m to 17 m over 6 seconds, always looking down at the subject.'},
+'push-in':{s:'아주 천천히 다가가기',o:'풀 아웃',k:'인물 정면에서 5초 동안 아주 천천히 다가가 전신에서 얼굴 클로즈업이 될 때까지 푸시 인해줘. 흔들림 없이 부드럽게.',e:'Very slow push-in from the front over 5 seconds, from full body to a close-up of the face. Smooth, no shake.'},
+'pull-back':{s:'얼굴에서 시작해 장소 공개',o:'푸시 인',k:'인물 얼굴 클로즈업에서 시작해 5초 동안 뒤로 크게 빠지며 위로 올라가 넓은 들판 전체를 드러내줘.',e:'Start on a close-up of the face, then pull back and rise over 5 seconds to reveal the entire open field.'},
+'lead-shot':{s:'걸어오는 인물 앞에서 뒷걸음',o:'팔로우 숏',k:'카메라 쪽으로 걸어오는 인물 앞에서 같은 속도로 뒤로 이동하며 3m 거리를 유지해줘. 상반신이 보이는 높이로 5초.',e:'Leading shot: the subject walks toward the camera while the camera moves backward at the same speed, keeping 3 meters of distance and a medium framing for 5 seconds.'},
+'follow-shot':{s:'인물의 뒤를 따라가기',o:'리드 숏',k:'걸어가는 인물의 등 뒤 3m에서 같은 속도로 따라가줘. 어깨 높이에서 인물이 향하는 앞쪽 풍경이 보이게.',e:'Follow shot: track behind the walking subject at 3 meters, shoulder height, matching speed, showing the path ahead.'},
+'side-tracking':{s:'나란히 옆에서 이동',k:'옆으로 걸어가는 인물과 4.5m 떨어져 나란히 같은 속도로 이동해줘. 인물은 화면 중앙, 배경은 옆으로 흐르게.',e:'Side tracking: move parallel to the walking subject at 4.5 meters, matching speed. The subject stays centered while the background slides by.'},
+'top-down':{s:'바로 위에서 돌며 내려오기',k:'인물 바로 위 16m에서 수직으로 내려다보며 5초 동안 천천히 회전하면서 6m까지 하강해줘.',e:'Top-down shot directly above the subject at 16 m, slowly rotating while descending to 6 m over 5 seconds.'},
+'low-hero':{s:'바닥에서 올려다보며 다가가기',k:'바닥에서 30cm 높이의 로우 앵글로 인물을 올려다보며 4초 동안 천천히 다가가줘. 광각 느낌으로 인물이 크고 당당해 보이게.',e:'Low-angle hero shot from 30 cm above the ground, looking up at the subject and slowly pushing in over 4 seconds. Wide-angle feel so the subject looks powerful.'},
+'crane-down':{s:'풍경에서 인물로 내려오기',o:'크레인 업',k:'14m 높이에서 들판을 내려다보는 장면으로 시작해 5초 동안 내려오며 마지막에는 인물을 눈높이 정면으로 잡아줘.',e:'Start high at 14 m looking over the field, descend over 5 seconds, and end at eye level framing the subject from the front.'},
+'reveal':{s:'앞의 물체 뒤에서 빠져나오며 공개',k:'화면을 가린 나무 기둥 뒤에서 시작해 카메라가 오른쪽으로 3m 이동하며 인물을 드러내줘. 카메라는 계속 인물 쪽을 향하게.',e:'Start hidden behind a tree trunk in the foreground, then truck right about 3 meters to reveal the subject, keeping the camera aimed at the subject.'},
+'dolly-zoom':{s:'인물은 그대로, 배경만 늘어나기',k:'카메라를 인물로부터 4m에서 15m까지 뒤로 빼면서 동시에 줌 인해서 인물 크기를 똑같이 유지해줘(버티고 효과). 3초 동안.',e:'Dolly zoom (vertigo effect): dolly back from 4 m to 15 m while zooming in so the subject stays the same size, over 3 seconds.'},
+'crash-zoom':{s:'순간적으로 확 당기기',k:'0.3초 만에 얼굴까지 빠르게 크래시 줌 인하고, 도착할 때 살짝 흔들리게 해줘.',e:'Crash zoom: snap-zoom into the face in 0.3 seconds with a slight shake on landing.'},
+'rack-focus':{s:'초점을 앞에서 뒤로 옮기기',o:'뒤에서 앞으로 랙 포커스',k:'앞쪽 꽃에 초점을 맞춘 상태로 시작해 1.2초 동안 초점을 인물로 옮기고, 잠시 뒤 먼 배경으로 다시 옮겨줘. 심도는 얕게.',e:'Rack focus: start sharp on the flower in the foreground, pull focus to the subject over 1.2 seconds, then to the distant background. Shallow depth of field.'},
+'handheld':{s:'손으로 들고 찍은 흔들림',o:'삼각대 고정',k:'처음 2초는 삼각대처럼 고정하고, 그 뒤로는 손으로 들고 찍은 듯한 자연스러운 미세 흔들림을 넣어줘.',e:'First 2 seconds locked off on a tripod, then switch to natural handheld micro-shake.'},
+'gimbal':{s:'걸으며 찍어도 부드럽게',k:'걸으며 앞으로 나아가는 시점을 좌우로 나눠서, 왼쪽은 손으로 들어 출렁이고 오른쪽은 짐벌로 미끄러지듯 부드럽게 이동하게 해줘.',e:'Split screen walking forward: the left side is handheld with bounce, the right side is gimbal-stabilized and glides smoothly.'},
+'pov':{s:'등장인물의 눈으로 보기',k:'걷는 사람의 1인칭 시점으로 들판 길을 따라 앞으로 걸어가줘. 걸음에 맞춰 살짝 위아래로 출렁이게.',e:'First-person POV walking forward along the meadow path, with a gentle head bob matching the footsteps.'},
+'flyover':{s:'풍경 위를 날아 지나가기',k:'드론이 11m 높이에서 앞을 내려다보며 5초 동안 일정한 속도로 전진해 인물 위를 지나가게 해줘.',e:'Drone flyover at 11 m altitude, angled down, flying forward at a constant speed over 5 seconds and passing over the subject.'},
+'fpv-dive':{s:'급강하하며 스쳐 지나가기',k:'FPV 드론이 16m 높이에서 급강하해 몸을 좌우로 기울이며 인물 옆 1m를 빠르게 스쳐 지나가게 해줘. 광각, 4초.',e:'FPV drone dive: plunge from 16 m, banking left and right, and whip past the subject at 1 meter. Wide lens, 4 seconds.'},
+'barrel-roll':{s:'앞으로 가며 한 바퀴 회전',k:'카메라가 인물 쪽으로 다가가면서 3초 동안 360도 한 바퀴 롤 회전해줘.',e:'Barrel roll: move toward the subject while rolling a full 360 degrees over 3 seconds.'},
+'ken-burns':{s:'사진 한 장을 영상처럼',k:'정지 사진을 5초 동안 105%에서 145%로 천천히 확대하면서 오른쪽 위로 살짝 이동시켜줘. 따뜻한 빈티지 색감으로.',e:'Ken Burns effect on a still photo: slow zoom from 105% to 145% with a slight drift up and to the right over 5 seconds. Warm vintage grade.'},
+'beat-cut':{s:'박자마다 컷 바꾸기',k:'120BPM 음악에 맞춰 0.5초(1박)마다 컷을 바꿔줘. 와이드, 클로즈업, 로우 앵글, 탑다운처럼 매번 다른 앵글로. 컷 순간 살짝 밝게 번쩍이게.',e:'Cut on every beat at 120 BPM (every 0.5 s), switching between wide, close-up, low-angle and top-down shots. Add a subtle brightness flash on each cut.'},
+'punch-in':{s:'박자에 맞춰 툭툭 확대',k:'박자마다 화면을 100%→130%→100%→160%로 0.07초 만에 툭 확대해줘. 사이에 부드러운 보간 없이 끊어서.',e:'Punch in on the beat: snap the frame 100% → 130% → 100% → 160%, 0.07 s each, with no smooth interpolation in between.'},
+'impact-shake':{s:'착지 순간 쿵 흔들기',k:'인물이 착지하는 순간 화면을 0.5초 동안 강하게 흔들고 점점 잦아들게 해줘. 동시에 7% 확대와 짧은 흰색 플래시도.',e:'On the landing, add a strong camera shake that decays over 0.5 s, with a 7% punch-in and a brief white flash.'},
+'velocity':{s:'빨랐다 느렸다 박자 반복',k:'매 박자 앞 35%는 3배속, 나머지는 0.25배속으로 바꾸는 벨로시티 편집을 해줘. 박자마다 살짝 줌 펄스도.',e:'Velocity edit: on every beat, play the first 35% at 3x speed and the rest at 0.25x, with a small zoom pulse on each beat.'},
+'smash-cut':{s:'조용하다가 갑자기 강렬하게',k:'채도 낮은 조용한 들판 장면을 2초 보여준 뒤, 전환 효과 없이 흔들리는 밤 도시 장면으로 바로 끊어줘. 컷 순간 붉은 플래시.',e:'Smash cut: 2 seconds of a calm, desaturated meadow, then cut with no transition to a shaky night city shot, with a red flash on the cut.'},
+'cut-on-action':{s:'동작 도중에 컷하기',k:'인물이 점프해서 올라가는 순간 와이드에서 상반신 샷으로 컷해줘. 동작이 끊기지 않게 같은 순간에서 이어지게.',e:'Cut on action: as the subject jumps, cut from the wide shot to a medium shot at the same moment so the motion continues seamlessly.'},
+'cross-cut':{s:'두 장소를 번갈아, 점점 빠르게',k:'들판 장면과 도시 장면을 번갈아 보여주고, 컷 길이를 1초에서 0.25초까지 점점 줄여 긴장감을 올려줘.',e:'Cross-cut between the meadow and the city, shortening each shot from 1 s down to 0.25 s to build tension.'},
+'echo':{s:'움직임 뒤로 잔상 남기기',k:'걸으며 점프하는 인물 뒤로 0.09초 간격의 반투명 잔상 5개가 점점 흐려지며 따라오게 해줘.',e:'Echo trail: five semi-transparent ghost copies, 0.09 s apart, follow the jumping subject and fade out.'},
+'rgb-split':{s:'박자마다 색이 어긋나기',k:'박자마다 빨강·초록·파랑 채널을 좌우로 14px 어긋나게 했다가 0.3초 동안 제자리로 돌아오게 해줘.',e:'RGB split on the beat: offset the red and blue channels 14 px horizontally, settling back over 0.3 s.'},
+'flash-pulse':{s:'박자마다 하얗게 번쩍',k:'박자마다 흰색 플래시를 40% 밝기로 넣고 0.1초 안에 사라지게 해줘. 깜빡임은 1초에 2번 이하로.',e:'White flash at 40% opacity on every beat, fading within 0.1 s. No more than 2 flashes per second.'},
+'letterbox':{s:'위아래 검은 띠로 영화처럼',k:'영상 시작 0.6초부터 1.2초 동안 위아래에서 검은 띠가 들어와 2.39:1 비율이 되게 해줘.',e:'Animate cinematic letterbox bars in from the top and bottom starting at 0.6 s over 1.2 s, ending at a 2.39:1 aspect ratio.'},
+'shot-sizes':{s:'얼마나 크게 담느냐',k:'같은 인물을 익스트림 롱숏, 롱숏, 미디엄숏, 바스트숏, 클로즈업, 익스트림 클로즈업 순서로 1.2초씩 컷해서 보여줘.',e:'Show the same subject in six cuts of 1.2 s each: extreme long shot, long shot, medium shot, bust shot, close-up, extreme close-up.'},
+'shot-els':{s:'인물은 점처럼, 풍경이 주인공',o:'익스트림 클로즈업',k:'넓은 들판과 산을 담은 익스트림 롱숏. 인물은 화면 속에 아주 작게 보이게.',e:'Extreme long shot of a vast meadow and mountains, with the subject tiny in the frame.'},
+'shot-ls':{s:'머리부터 발끝까지',k:'인물의 머리부터 발끝까지 전신이 모두 보이는 롱숏(풀숏). 머리 위에 약간의 여백.',e:'Full shot: the subject from head to toe with a little headroom.'},
+'shot-ms':{s:'허리 위',k:'인물의 허리 위를 담은 미디엄숏. 눈높이 정면.',e:'Medium shot from the waist up, eye level, facing the subject.'},
+'shot-bs':{s:'가슴 위',k:'인물의 가슴 위를 담은 바스트숏(미디엄 클로즈업).',e:'Bust shot (medium close-up) from the chest up.'},
+'shot-cu':{s:'얼굴로 화면을 채우기',k:'인물의 얼굴이 화면을 가득 채우는 클로즈업.',e:'Close-up with the face filling the frame.'},
+'shot-ecu':{s:'눈만 크게',o:'익스트림 롱숏',k:'인물의 두 눈만 화면 가득 담은 익스트림 클로즈업.',e:'Extreme close-up of just the eyes.'},
+'eye-level':{s:'눈높이에서 수평으로',o:'하이 앵글 · 로우 앵글',k:'인물의 눈높이에서 수평으로 바라보는 아이 레벨 미디엄숏.',e:'Eye-level medium shot, the camera level with the subject’s eyes.'},
+'high-angle':{s:'위에서 내려다보기',o:'로우 앵글',k:'인물 머리 위 약 6m 높이에서 비스듬히 내려다보는 하이 앵글.',e:'High-angle shot looking down at the subject from about 6 m above.'},
+'low-angle':{s:'아래에서 올려다보기',o:'하이 앵글',k:'바닥에서 20cm 높이에서 인물을 올려다보는 로우 앵글. 배경엔 하늘이 넓게.',e:'Low-angle shot from 20 cm above the ground looking up at the subject, with the sky filling the background.'},
+'birds-eye':{s:'거의 수직 위에서',o:"웜즈아이 뷰 (Worm's-eye)",k:'인물 바로 위 10m에서 거의 수직으로 내려다보는 버드아이 뷰.',e:'Bird’s-eye view from 10 m directly above, looking almost straight down.'},
+'ots':{s:'상대의 어깨 너머로',k:'앞사람의 어깨와 뒷머리를 화면 왼쪽 아래에 흐리게 걸치고, 그 너머 인물에 초점을 맞춘 오버 더 숄더 숏.',e:'Over-the-shoulder shot: the foreground person’s shoulder and back of head soft-focused in the lower left, focus on the subject beyond.'},
+'thirds':{s:'3등분 선이 만나는 곳에',k:'인물을 화면 왼쪽 3분의 1 선 위에 두고, 눈은 위쪽 3분의 1 선에 맞춰줘.',e:'Rule of thirds: place the subject on the left third line with the eyes on the upper third line.'},
+'lead-room':{s:'움직이는 방향 앞에 여유',k:'오른쪽으로 달리는 차를 화면 왼쪽 3분의 1에 두고, 진행 방향 앞쪽에 여유 공간을 남긴 채 같은 속도로 따라가줘.',e:'Track a car moving right, keeping it on the left third with open lead room ahead in the direction of travel.'},
+'silhouette':{s:'해를 등지고 검은 윤곽만',k:'해를 인물 바로 뒤에 두고 낮은 앵글에서 역광으로 찍어 인물이 검은 실루엣으로만 보이게 해줘. 노을빛 하늘.',e:'Backlit silhouette: low angle with the sun directly behind the subject at sunset, so the subject reads as a black outline.'},
+'tilt-shift':{s:'진짜 풍경을 미니어처처럼',k:'높은 곳에서 비스듬히 내려다본 장면의 위아래를 흐리고 가운데만 선명하게, 채도를 170%로 올려 미니어처처럼 보이게 해줘. 3배속.',e:'Tilt-shift miniature: high-angle view, blur the top and bottom bands, keep a sharp center strip, boost saturation to 170%, play at 3x speed.'},
+'cut':{s:'효과 없이 바로',k:'두 클립을 전환 효과 없이 1.5초 지점에서 바로 컷으로 이어줘.',e:'Hard cut between the two clips at 1.5 s, no transition.'},
+'fade-in':{s:'검은 화면에서 서서히',o:'페이드 아웃 (Fade out)',k:'검은 화면에서 시작해 1.6초 동안 투명도 0%→100%로 페이드 인해줘.',e:'Fade in from black over 1.6 seconds (0% → 100% opacity).'},
+'fade-out':{s:'서서히 검은 화면으로',o:'페이드 인 (Fade in)',k:'마지막 1.6초 동안 투명도 100%→0%로 검은 화면까지 페이드 아웃해줘.',e:'Fade out to black over the final 1.6 seconds.'},
+'dip-black':{s:'잠깐 검은 화면을 거쳐서',o:'딥 투 화이트',k:'앞 클립을 0.7초 동안 검게 페이드 아웃하고, 0.2초 검은 화면 뒤 다음 클립을 0.7초 동안 페이드 인해줘.',e:'Dip to black: fade the first clip out over 0.7 s, hold black for 0.2 s, then fade the next clip in over 0.7 s.'},
+'flash':{s:'하얗게 번쩍이며',o:'딥 투 블랙',k:'컷 지점 0.2초 전부터 흰색으로 밝아졌다가 다음 클립에서 0.4초 동안 빠지게 해줘.',e:'Flash to white 0.2 s before the cut, then fade the white out over 0.4 s into the next clip.'},
+'dissolve':{s:'겹쳐지며 바뀌기',k:'두 클립 사이에 1.4초 크로스 디졸브를 넣어줘.',e:'Add a 1.4-second cross dissolve between the two clips.'},
+'wipe':{s:'경계선이 화면을 쓸고 지나가며',k:'왼쪽에서 오른쪽으로 1.2초 동안 수직 경계선이 지나가며 다음 장면이 드러나는 와이프 전환을 넣어줘.',e:'Left-to-right wipe over 1.2 s with a hard vertical edge revealing the next clip.'},
+'iris':{s:'동그랗게 닫혔다 열리기',k:'인물을 중심으로 원이 1.2초 동안 작아지며 닫히고, 다음 장면이 원에서부터 1.2초 동안 열리게 해줘.',e:'Iris out on the subject over 1.2 s, then iris in on the next scene over 1.2 s.'},
+'push':{s:'밀어내며 들어오기',k:'다음 클립이 오른쪽에서 들어오면서 앞 클립을 왼쪽으로 1.2초 동안 밀어내게 해줘.',e:'Push transition: the next clip slides in from the right and pushes the current clip out to the left over 1.2 s.'},
+'split':{s:'화면을 나눠 동시에',k:'1초 지점부터 오른쪽 절반에 두 번째 장면이 밀려 들어와 화면이 좌우 반반으로 나뉘게 해줘.',e:'Starting at 1 s, slide the second scene into the right half so the frame splits 50/50.'},
+'zoom-transition':{s:'확 확대되며 넘어가기',k:'앞 클립을 0.8초 동안 360%까지 빠르게 확대하며 흐리게 하고, 다음 클립은 확대된 상태에서 0.8초 동안 100%로 돌아오게 해줘.',e:'Zoom transition: scale the first clip up to 360% with blur over 0.8 s, then bring the next clip from zoomed-in back to 100% over 0.8 s.'},
+'whip-pan':{s:'휙 돌리며 뭉개질 때 바꾸기',k:'앞 클립 끝에서 오른쪽으로 빠르게 휩 팬하며 모션 블러를 넣고, 다음 클립은 같은 방향 휩 팬에서 멈추며 시작하게 해줘. 전체 1.3초.',e:'Whip pan: a fast pan right with motion blur at the end of clip A; clip B starts mid-whip in the same direction and settles. 1.3 s total.'},
+'spin':{s:'빙글 돌며 넘어가기',k:'화면이 1.5초 동안 360도 회전하며 중간에 다음 장면으로 바뀌게 해줘. 회전 블러 포함.',e:'Spin transition: rotate the frame 360 degrees over 1.5 s with rotational blur, switching scenes at the halfway point.'},
+'glitch':{s:'신호가 깨지듯',k:'컷 지점 앞뒤 0.35초 동안 가로 줄이 찢어지고 RGB가 어긋나는 글리치를 넣어 장면을 바꿔줘.',e:'Glitch transition: 0.35 s on either side of the cut, with horizontal slice tearing and RGB offsets.'},
+'blur-transition':{s:'흐려졌다가 다시 또렷하게',k:'앞 클립을 0.8초 동안 흐리게 하고, 다음 클립은 흐린 상태에서 0.8초 동안 또렷해지게 해줘.',e:'Blur out the first clip over 0.8 s, then bring the next clip from blurred to sharp over 0.8 s.'},
+'light-leak':{s:'따뜻한 빛 번짐 속에서',k:'주황·분홍빛 라이트 릭이 2초 동안 화면을 가로지르고, 가장 밝은 순간에 다음 클립으로 바꿔줘.',e:'An orange and pink light leak sweeps across the frame over 2 s, cutting to the next clip at its brightest moment.'},
+'invisible-cut':{s:'가려지는 순간 몰래',k:'어두운 기둥이 화면을 가로지르며 완전히 가리는 순간 다음 장면으로 바꿔서 원테이크처럼 보이게 해줘.',e:'Invisible cut: a dark pillar wipes across the frame, and the cut happens while the frame is fully covered, so it feels like one take.'},
+'match-cut':{s:'닮은 모양으로 이어 붙이기',k:'낮 하늘의 해로 줌 인한 뒤, 같은 위치·같은 크기의 밤하늘 달로 컷하고 다시 줌 아웃해줘.',e:'Match cut: zoom into the sun in the daytime sky, cut to the moon at the same position and size in the night sky, then zoom out.'},
+'jump-cut':{s:'같은 앵글에서 툭툭 건너뛰기',k:'같은 앵글로 찍은 인물 영상을 1초마다 잘라 붙여서 위치가 툭툭 바뀌는 점프 컷으로 만들어줘.',e:'Jump cuts: same angle, cut every 1 second so the subject’s position jumps between shots.'},
+'j-cut':{s:'소리가 먼저 넘어가기',o:'L컷',k:'다음 장면의 소리를 화면보다 1초 먼저 시작해줘(J컷).',e:'J-cut: start the next scene’s audio 1 second before its picture.'},
+'l-cut':{s:'소리는 남고 화면만 넘어가기',o:'J컷',k:'화면은 다음 장면으로 바꾸되 앞 장면 소리는 1.2초 더 이어가줘(L컷).',e:'L-cut: switch the picture to the next scene but keep the previous audio running for 1.2 more seconds.'},
+'slow-motion':{s:'느리게 늘려서 보기',o:'패스트 모션',k:'점프하는 장면을 정상 속도로 한 번 보여준 뒤, 같은 순간을 0.25배속 슬로 모션으로 다시 보여줘(120fps 촬영 기준).',e:'Show the jump at normal speed, then replay the same moment at 0.25x slow motion (shot at 120 fps).'},
+'timelapse':{s:'몇 시간을 몇 초로',k:'들판의 낮부터 밤까지를 5초짜리 타임랩스로 만들어줘. 구름은 빠르게 흐르고 그림자는 길어지게.',e:'Time-lapse of the meadow from day to night in 5 seconds, with fast-moving clouds and lengthening shadows.'},
+'hyperlapse':{s:'시간과 공간을 함께 흘리기',k:'카메라가 옆으로 10m 이동하는 동안 30배속 타임랩스로 찍은 하이퍼랩스를 만들어줘. 해 질 녘까지.',e:'Hyperlapse: a 30x time-lapse while the camera travels 10 m sideways, into golden hour.'},
+'speed-ramp':{s:'빠름 → 아주 느림 → 빠름',k:'점프 장면을 1배속에서 시작해 정점에서 0.15배속까지 곡선으로 느려졌다가 다시 1배속으로 돌아오게 스피드 램프를 걸어줘.',e:'Speed ramp: start at 1x, ease down to 0.15x at the peak of the jump, then ramp back to 1x.'},
+'freeze-frame':{s:'딱 멈춰 정지 화면으로',k:'인물이 점프 최고점에 닿는 순간 화면을 멈추고, 흑백으로 바꾸며 흰 플래시와 함께 "그래, 이게 나야." 자막을 넣어줘.',e:'Freeze frame at the peak of the jump, turn it black and white with a white flash, and add the caption "Yep, that’s me."'},
+'reverse':{s:'거꾸로 되감기',k:'2초 정방향으로 재생한 뒤 같은 구간을 거꾸로 되감아줘. 되감기 구간엔 VHS 스캔라인을.',e:'Play 2 seconds forward, then rewind the same section in reverse with VHS scanlines.'},
+'stop-motion':{s:'뚝뚝 끊기게',k:'앞부분은 30fps로 부드럽게, 뒷부분은 6fps로 프레임을 줄여 스톱 모션처럼 뚝뚝 끊기게 해줘.',e:'First part at a smooth 30 fps, then drop to 6 fps for a choppy stop-motion feel.'},
+'easing':{s:'가속과 감속 주기',k:'사각형 4개를 같은 거리만큼 2초 동안 이동시키되 각각 리니어, 이즈 인, 이즈 아웃, 이즈 인아웃으로 움직여 비교해줘.',e:'Move four squares the same distance over 2 s using linear, ease-in, ease-out and ease-in-out for comparison.'},
+'overshoot':{s:'지나쳤다 돌아오거나 튕기기',k:'카드를 0.9초 동안 0%→110%→100%로 오버슈트하며 등장시키고, 공은 위에서 떨어져 세 번 튕긴 뒤 멈추게 해줘.',e:'Pop a card in with overshoot, 0% → 110% → 100% over 0.9 s, and drop a ball that bounces three times and settles.'},
+'stagger':{s:'시간차를 두고 차례로',k:'막대 10개를 왼쪽부터 0.15초 간격으로 차례로 솟아오르게 하고, 끝날 땐 같은 순서로 내려가게 해줘.',e:'Stagger: raise 10 bars from left to right with 0.15 s offsets, then lower them in the same order.'},
+'mask-reveal':{s:'보이지 않는 틀 뒤에서 올라오기',k:'두 줄 제목을 마스크 안에서 아래에서 위로 0.9초 동안 밀어 올려 드러내고, 두 번째 줄은 0.4초 늦게 시작해줘.',e:'Mask reveal: slide each line of a two-line title up from behind an invisible mask over 0.9 s, the second line 0.4 s later.'},
+'kinetic-type':{s:'글자 자체가 움직이며 말하기',k:'"말이 움직이면 메시지가 살아난다"의 네 단어를 떨어지기, 커지기, 미끄러지기, 회전하기로 하나씩 등장시켜줘.',e:'Kinetic typography: bring in four words one by one with a drop, a scale-down, a slide and a spin.'},
+'lower-third':{s:'아래 3분의 1에 이름표',k:'화면 왼쪽 아래에 빨간 포인트가 있는 어두운 바를 0.7초 동안 펼치고 이름과 직함이 아래에서 올라오게 해줘. 4초 뒤 사라지게.',e:'Lower third: expand a dark bar with a red accent in the lower left over 0.7 s, slide the name and title up into it, and remove it after 4 seconds.'},
+'morph':{s:'모양이 다른 모양으로',k:'원이 0.8초 동안 사각형으로, 다시 별로, 다시 원으로 부드럽게 변형되며 천천히 회전하게 해줘.',e:'Shape morph: circle → square → star → circle, 0.8 s per morph, slowly rotating.'},
+'combo-orbit-punch':{s:'도는 화면에 리듬 더하기',k:'인물 주위를 4초 동안 반 바퀴 돌면서, 120BPM 박자마다 화면을 100%→125%→100%→145%로 툭툭 확대해줘.',e:'Orbit halfway around the subject over 4 seconds while punching in on every beat at 120 BPM: 100% → 125% → 100% → 145%.'},
+'combo-follow-crane':{s:'따라가다 하늘로 떠오르기',k:'걸어가는 인물을 등 뒤 3m에서 2초 동안 따라가다가, 이어서 3초 동안 12m 높이로 솟아오르며 인물이 향하는 앞쪽 풍경을 넓게 보여줘.',e:'Follow the walking subject from 3 m behind for 2 seconds, then rise to 12 m over 3 seconds to reveal the wide landscape ahead.'},
+'combo-fpv-ramp':{s:'스쳐 지나가는 순간만 느리게',k:'FPV 드론이 높은 곳에서 급강하해 인물 옆을 스쳐 지나가는데, 인물 옆을 지나는 순간만 0.2배속으로 느려졌다가 다시 원래 속도로 빠져나가게 해줘.',e:'FPV dive from high above, ramping down to 0.2x speed only as it passes beside the subject, then back to full speed as it exits.'},
+'combo-pullback-timelapse':{s:'멀어지는 동안 해가 진다',k:'인물 얼굴 클로즈업에서 5초 동안 크게 뒤로 빠지며 올라가는 동안, 하늘은 타임랩스로 낮에서 노을을 지나 밤으로 바뀌게 해줘.',e:'Pull back and up from a close-up of the face over 5 seconds while the sky time-lapses from day through sunset into night.'},
+'combo-crash-shake':{s:'헉! 하는 리액션',k:'0.3초 만에 얼굴로 크래시 줌 인하고, 도착하는 순간 강한 흔들림과 흰 플래시를 넣어 0.5초 동안 잦아들게 해줘.',e:'Crash zoom into the face in 0.3 s, then hit a strong shake and a white flash on arrival that settles over 0.5 s.'},
+'combo-side-echo':{s:'나란히 달리며 꼬리 남기기',k:'점프하며 달려가는 인물과 4.5m 떨어져 나란히 이동하면서, 인물 뒤로 반투명 잔상 5개가 꼬리처럼 따라오게 해줘.',e:'Track alongside the subject at 4.5 m as they run and jump, with five semi-transparent echo trails following behind.'},
+'combo-helix-letterbox':{s:'영화 같은 엔딩',k:'드론이 인물 주위를 돌며 17m까지 나선형으로 상승하는 동안, 처음 1.5초 안에 위아래 검은 띠가 들어와 2.39:1 비율이 되게 해줘.',e:'Drone helix rising to 17 m around the subject, with cinematic letterbox bars sliding in during the first 1.5 seconds to a 2.39:1 ratio.'},
+'combo-push-rack':{s:'다가가면서 초점 넘기기',k:'카메라를 앞쪽 꽃 너머로 4초 동안 천천히 전진시켜줘. 처음엔 꽃에 맞춘 초점을 1.5초 지점부터 1초 동안 인물로 옮기고, 심도는 얕게 유지해줘.',e:'Slowly push forward past a flower in the foreground over 4 seconds. Start focused on the flower, then from 1.5 s pull focus to the subject over 1 second. Keep the depth of field shallow.'},
+'combo-bullet':{s:'멈춘 듯한 순간을 돌아보기',k:'인물이 점프한 순간을 0.2배속 슬로 모션으로 늘리고, 그동안 카메라는 인물 주위를 5m 거리에서 150도 빠르게 돌아줘. 전체 4초.',e:'Bullet time: stretch the jump to 0.2x slow motion while the camera orbits 150 degrees around the subject at 5 m. 4 seconds total.'},
+'combo-crane-arc':{s:'높이에서 원을 그리며 내려오기',k:'15m 높이에서 들판을 내려다보며 시작해, 인물 주위를 110도 돌면서 5초 동안 눈높이 5.5m 거리까지 내려와줘. 끝은 부드럽게 감속.',e:'Start 15 m up looking over the field, then arc 110 degrees around the subject while descending to eye level at 5.5 m over 5 seconds. Ease out at the end.'},
+'combo-hero-vertigo':{s:'아래에서 올려다보며 배경만 늘어나기',k:'바닥에서 30cm 높이의 로우 앵글로 인물을 올려다보면서, 카메라는 2.6m에서 9m까지 뒤로 빠지고 줌은 당겨 인물 크기를 유지해줘. 3초 동안.',e:'Low angle from 30 cm above the ground looking up at the subject: dolly back from 2.6 m to 9 m while zooming in to keep the subject the same size, over 3 seconds.'},
+'combo-ramp-whip':{s:'느려지다 휙 넘어가기',k:'점프 장면을 1배속에서 0.15배속까지 서서히 느리게 한 뒤, 정점에서 오른쪽으로 휩 팬하며 밤 도시 장면으로 넘어가줘. 도시 장면은 1배속으로.',e:'Ramp the jump from 1x down to 0.15x, then at the peak whip pan right into the night city shot, which plays at 1x.'}
+};
+const COMBO_TAGS={'combo-push-rack':'추천 · 감성 오프닝','combo-follow-crane':'추천 · 여행 오프닝','combo-crane-arc':'추천 · 장소+주인공 소개','combo-bullet':'추천 · 액션 하이라이트','combo-fpv-ramp':'추천 · 스포츠','combo-side-echo':'추천 · 댄스·러닝','combo-orbit-punch':'추천 · 패션 숏폼','combo-ramp-whip':'추천 · 장소 전환','combo-crash-shake':'추천 · 예능 리액션','combo-hero-vertigo':'추천 · 각성·반전','combo-pullback-timelapse':'추천 · 브이로그 엔딩','combo-helix-letterbox':'추천 · 시네마틱 엔딩'};
+const COMBO_ORDER=Object.keys(COMBO_TAGS);
+TECH.forEach(it=>{const m=META[it.id]||{};it.sum=m.s||'';it.opp=m.o||'';it.tags=COMBO_TAGS[it.id]||CAT_TAGS[it.cat]||'';it.pk=m.k||'';it.pe=m.e||'';});
+
+const catIdx=id=>CATS.findIndex(c=>c.id===id);
+TECH.sort((a,b)=>catIdx(a.cat)-catIdx(b.cat)||(a.cat==='combo'?COMBO_ORDER.indexOf(a.id)-COMBO_ORDER.indexOf(b.id):0));
+
+/* ================= UI ================= */
+let lang='ko';try{const v=localStorage.getItem('vt-prompt-lang');if(v==='en'||v==='ko')lang=v;}catch(e){}
+const ICON_COPY='<svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
+const ICON_OK='<svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>';
+const lanes={v2:$('lane-v2'),v1:$('lane-v1'),a1:$('lane-a1')};
+let cur=null,time=0,playing=false,loop=true,rate=1,holdUntil=0,last=performance.now(),dirty=true,scrubbing=false,modalOpen=false,view='dict',lastFocus=null;
+const visible=new Set();
+const io='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEach(e=>{const it=e.target._it;if(e.isIntersecting)visible.add(it);else visible.delete(it);}),{rootMargin:'160px 0px'}):null;
+const pad2=n=>String(n).padStart(2,'0');
+const promptOf=it=>lang==='en'?(it.pe||it.pk):(it.pk||it.pe);
+
+function copyText(txt,btn,textEl){
+  const done=()=>{btn.classList.add('done');btn.innerHTML=ICON_OK+'복사됨';clearTimeout(btn._t);btn._t=setTimeout(()=>{btn.classList.remove('done');btn.innerHTML=ICON_COPY+'복사';},1600);};
+  const fallback=()=>{try{const r=document.createRange();r.selectNodeContents(textEl);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.innerHTML='선택됨 · 직접 복사하세요';}catch(e){}};
+  try{navigator.clipboard.writeText(txt).then(done,fallback);}catch(e){fallback();}
+}
+
+const catEl=$('catalog'),navEl=$('catNav');
+let dictNo=0,comboNo=0;
+function makeCard(it){
+  const el=document.createElement('article');el.className='card';el.id='it-'+it.id;el._it=it;
+  if(it.cat==='combo')it.no=`Combo / ${pad2(++comboNo)}`;else it.no=`No. ${pad2(++dictNo)}`;
+  el.innerHTML=`<div class="card-head"><span>${it.no}</span><span>${it.tags}</span></div>${it.parts?`<p class="parts">${it.parts}</p>`:''}
+<h4>${it.ko}</h4><p class="en">${it.en}</p>${it.sum?`<p class="sum">${it.sum}</p>`:''}<p class="desc">${it.desc}</p>${it.opp?`<p class="opp">반대: ${it.opp}</p>`:''}
+<div class="pv"><canvas class="thumb" width="${TW}" height="${Math.round(TW*9/16)}" role="img" aria-label="${it.ko} 미리보기, 누르면 크게 보기"></canvas>
+<div class="pv-bar"><button type="button" class="pv-btn pv-play" aria-pressed="${reduce?'false':'true'}"><span class="dot"></span><span class="t">${reduce?'재생':'재생 중'}</span></button><span class="meta">${it.dur}초 · 반복</span><button type="button" class="pv-btn pv-big">크게 보기</button></div></div>
+<div class="pr"><div class="pr-head"><span>PROMPT EXAMPLE</span><button type="button" class="copy">${ICON_COPY}복사</button></div><p class="pr-text"></p></div>`;
+  const tc=el.querySelector('canvas');tc._it=it;it.tctx=tc.getContext('2d');it.last=0;it.t0=performance.now()/1000-rnd(dictNo*7+comboNo*3)*3;it.paused=reduce;it.drawn=false;
+  it.prEl=el.querySelector('.pr-text');it.prEl.textContent=promptOf(it);
+  tc.addEventListener('click',()=>openModal(it.id,tc));
+  el.querySelector('.pv-big').addEventListener('click',e=>openModal(it.id,e.currentTarget));
+  const pb=el.querySelector('.pv-play');pb.addEventListener('click',()=>{const now=performance.now()/1000;
+    if(it.paused){it.t0=now-(it.pauseT||0);it.paused=false;}else{it.pauseT=now-it.t0;it.paused=true;}
+    pb.setAttribute('aria-pressed',String(!it.paused));pb.querySelector('.t').textContent=it.paused?'멈춤':'재생 중';});
+  const cpy=el.querySelector('.copy');cpy.addEventListener('click',()=>copyText(promptOf(it),cpy,it.prEl));
+  if(io)io.observe(tc);else visible.add(it);
+  it.el=el;return el;
+}
+CATS.forEach((cat,ci)=>{
+  const items=TECH.filter(x=>x.cat===cat.id);if(!items.length)return;
+  const sec=document.createElement('section');sec.className='cat';sec.id='cat-'+cat.id;sec.dataset.cat=cat.id;
+  sec.innerHTML=`<div class="cat-h"><h3>${cat.ko}</h3><span class="cat-count">${pad2(items.length)}</span><span class="cat-en">${cat.en}</span></div><p class="cat-note">${cat.note}</p><div class="grid${cat.id==='combo'?' combo':''}"></div>`;
+  const grid=sec.querySelector('.grid');items.forEach(it=>grid.appendChild(makeCard(it)));
+  catEl.appendChild(sec);
+  if(cat.id==='combo')return;
+  const b=document.createElement('button');b.type='button';b.dataset.cat=cat.id;
+  b.innerHTML=`<span class="no">${pad2(ci+1)}</span><span>${cat.ko}</span><span class="n">${pad2(items.length)}</span>`;
+  b.addEventListener('click',()=>{if(view!=='dict')setView('dict');const mobile=window.innerWidth<900,off=mobile?document.querySelector('.side').offsetHeight+8:16;
+    window.scrollTo({top:sec.getBoundingClientRect().top+window.scrollY-off,behavior:reduce?'auto':'smooth'});});
+  navEl.appendChild(b);
+});
+$('nDict').textContent=TECH.filter(x=>x.cat!=='combo').length;$('nCombo').textContent=TECH.filter(x=>x.cat==='combo').length;
+
+function applyFilter(){
+  const q=$('q').value.trim().toLowerCase();let any=false;
+  document.querySelectorAll('.cat').forEach(sec=>{
+    const isCombo=sec.dataset.cat==='combo';
+    if(!q&&((view==='dict'&&isCombo)||(view==='combo'&&!isCombo))){sec.hidden=true;return;}
+    let n=0;sec.querySelectorAll('.card').forEach(c=>{const it=c._it,hit=!q||[it.ko,it.en,it.desc,it.sum,it.parts||'',it.opp].join(' ').toLowerCase().includes(q);c.hidden=!hit;if(hit)n++;});
+    sec.hidden=n===0;if(n)any=true;});
+  $('empty').hidden=any;
+}
+function setView(v){view=v;$('libDict').setAttribute('aria-pressed',String(v==='dict'));$('libCombo').setAttribute('aria-pressed',String(v==='combo'));applyFilter();window.scrollTo({top:0});}
+$('libDict').addEventListener('click',()=>setView('dict'));
+$('libCombo').addEventListener('click',()=>setView('combo'));
+$('q').addEventListener('input',applyFilter);
+function setLang(l){lang=l;try{localStorage.setItem('vt-prompt-lang',l);}catch(e){}
+  document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===l)));
+  TECH.forEach(it=>{if(it.prEl)it.prEl.textContent=promptOf(it);});if(cur)$('mPrompt').textContent=promptOf(cur);}
+document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+setLang(lang);applyFilter();
+if('IntersectionObserver' in window){const spy=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){navEl.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.cat===e.target.dataset.cat));}});},{rootMargin:'-20% 0px -70% 0px'});document.querySelectorAll('.cat').forEach(s=>spy.observe(s));}
+
+function buildTL(it){
+  const tl=it.tl||{};
+  Object.values(lanes).forEach(l=>l.innerHTML='');
+  ['v2','v1','a1'].forEach(k=>(tl[k]||[]).forEach(([lab,f,to,kind])=>{const d=document.createElement('div');d.className='clip k-'+kind;d.style.left=f*100+'%';d.style.width=(to-f)*100+'%';d.textContent=lab;d.title=lab;lanes[k].appendChild(d);}));
+  (tl.fx||[]).forEach(([f,to,lab,lane])=>{const d=document.createElement('div');d.className='fx';d.style.left=f*100+'%';d.style.width=(to-f)*100+'%';d.textContent=lab;lanes[lane||'v1'].appendChild(d);});
+  (tl.marks||[]).forEach(m=>{const d=document.createElement('div');d.className='cutmark';d.style.left=m*100+'%';lanes.v1.appendChild(d);});
+  (tl.kf||[]).forEach(m=>{const d=document.createElement('div');d.className='kf';d.style.left=m*100+'%';d.title='키프레임';lanes.v1.appendChild(d);});
+  (tl.beats||[]).forEach(m=>{const d=document.createElement('div');d.className='beat';d.style.left=m*100+'%';lanes.a1.appendChild(d);});
+  const ru=$('ruler');ru.innerHTML='';
+  for(let s=0;s<=Math.floor(it.dur);s++){const d=document.createElement('div');d.className='tick';d.style.left=(s/it.dur*100)+'%';if(s<it.dur-.3)d.innerHTML=`<b>${s}s</b>`;ru.appendChild(d);}
+}
+function select(id,autoplay){
+  const it=TECH.find(x=>x.id===id)||TECH[0];cur=it;
+  $('iNo').textContent=it.no;$('iTags').textContent=it.tags;$('iKo').textContent=it.ko;$('iEn').textContent=it.en;
+  $('iSum').textContent=it.sum;$('iSum').hidden=!it.sum;$('iDesc').textContent=it.desc;$('iUse').textContent=it.use;
+  $('iOpp').hidden=!it.opp;$('iOpp').textContent=it.opp?'반대: '+it.opp:'';$('iParts').hidden=!it.parts;$('iParts').textContent=it.parts||'';
+  $('mPrompt').textContent=promptOf(it);$('mCopy').innerHTML=ICON_COPY+'복사';$('mCopy').classList.remove('done');
+  $('monName').textContent=it.en.toUpperCase();cv.setAttribute('aria-label',`${it.ko} 예시 영상`);
+  buildTL(it);time=autoplay?0:it.dur*.5;holdUntil=0;playing=!!autoplay;updateBtn();dirty=true;
+  if(location.hash.slice(1)!==it.id){try{history.replaceState(null,'','#'+it.id);}catch(e){}}
+}
+const modal=$('modal');
+function openModal(id,from){lastFocus=from||document.activeElement;modal.hidden=false;modalOpen=true;document.body.style.overflow='hidden';select(id,!reduce);resize();$('mClose').focus();}
+function closeModal(){modal.hidden=true;modalOpen=false;playing=false;updateBtn();document.body.style.overflow='';try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  if(lastFocus&&document.contains(lastFocus))lastFocus.focus();}
+$('mClose').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+$('mCopy').addEventListener('click',()=>{if(cur)copyText(promptOf(cur),$('mCopy'),$('mPrompt'));});
+
+function fmt(s){const f=Math.floor(s*30+1e-6),ff=f%30,ss=Math.floor(f/30)%60,mm=Math.floor(f/1800);return `00:${pad2(mm)}:${pad2(ss)}:${pad2(ff)}`;}
+function frame(it,t){
+  ctx.setTransform(SF,0,0,SF,0,0);reset(ctx);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  try{it.r(t,t*it.dur,it.dur);}catch(e){console.error(it.id,e);}
+  ctx.setTransform(SF,0,0,SF,0,0);reset(ctx);
+}
+function render(){
+  if(!cur)return;const t=clamp(time/cur.dur);
+  useTarget(MAIN);frame(cur,t);
+  $('ph').style.left=(t*100)+'%';$('lanes').setAttribute('aria-valuenow',Math.round(t*100));
+  $('tc').innerHTML=`${fmt(time)} <em>/ ${fmt(cur.dur)}</em>`;
+}
+function drawThumb(it,nowS){
+  const cyc=it.dur+.8,el=it.paused?(it.pauseT??it.dur*.55):(nowS-it.t0);
+  const t=reduce&&!it.pauseT?.55:clamp((((el%cyc)+cyc)%cyc)/it.dur);
+  TH.ctx=it.tctx;useTarget(TH);frame(it,t);it.drawn=true;
+}
+function thumbs(now){
+  const t0=performance.now(),budget=modalOpen?3:(playing?6:10),nowS=now/1000;
+  const list=[...visible].sort((a,b)=>a.last-b.last);
+  for(const it of list){
+    if(performance.now()-t0>budget)break;
+    if(it.paused){if(it.drawn)continue;}else if(now-it.last<70)continue;
+    drawThumb(it,nowS);it.last=now;
+  }
+}
+function updateBtn(){
+  $('playIcon').innerHTML=playing?'<path d="M3 2h4v12H3zM9 2h4v12H9z"/>':'<path d="M4 2l10 6-10 6z"/>';
+  $('playLbl').textContent=playing?'일시정지':'재생';$('play').setAttribute('aria-label',playing?'일시정지':'재생');
+  $('tally').classList.toggle('on',playing);
+}
+function tick(now){
+  const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(modalOpen){
+    if(playing&&cur&&!scrubbing){
+      if(holdUntil){if(now>=holdUntil){holdUntil=0;time=0;dirty=true;}}
+      else{time+=dt*rate;dirty=true;if(time>=cur.dur){time=cur.dur;if(loop)holdUntil=now+900;else{playing=false;updateBtn();}}}
+    }
+    if(dirty){render();dirty=false;}
+  }
+  if(!document.hidden)thumbs(now);
+  requestAnimationFrame(tick);
+}
+function resize(){
+  const w=cv.clientWidth||640,dpr=Math.min(2,window.devicePixelRatio||1),px=Math.max(320,Math.round(w*dpr));
+  if(cv.width!==px){cv.width=px;cv.height=Math.round(H*px/W);}
+  sizeTarget(MAIN,px);
+  if(MAIN.R){const rw=Math.min(px,1600);MAIN.R.setSize(rw,Math.round(rw*9/16),false);}
+  dirty=true;
+}
+$('play').addEventListener('click',()=>{if(!cur)return;if(!playing&&time>=cur.dur)time=0;playing=!playing;holdUntil=0;updateBtn();dirty=true;});
+$('replay').addEventListener('click',()=>{time=0;holdUntil=0;playing=true;updateBtn();dirty=true;});
+const step=d=>{const list=TECH.filter(x=>!x.el.hidden&&!x.el.closest('.cat').hidden),i=list.indexOf(cur),n=list[(i+d+list.length)%list.length]||TECH[0];select(n.id,true);};
+$('prev').addEventListener('click',()=>step(-1));
+$('next').addEventListener('click',()=>step(1));
+$('loop').addEventListener('click',e=>{loop=!loop;e.currentTarget.setAttribute('aria-pressed',loop);});
+$('slow').addEventListener('click',e=>{rate=rate===1?.5:1;e.currentTarget.setAttribute('aria-pressed',rate!==1);});
+$('diagBtn').addEventListener('click',e=>{showDiag=!showDiag;e.currentTarget.setAttribute('aria-pressed',showDiag);dirty=true;});
+const lanesEl=$('lanes');
+function scrubTo(e){const r=lanesEl.getBoundingClientRect();time=clamp((e.clientX-r.left)/r.width)*cur.dur;holdUntil=0;dirty=true;}
+lanesEl.addEventListener('pointerdown',e=>{if(!cur)return;scrubbing=true;playing=false;updateBtn();try{lanesEl.setPointerCapture(e.pointerId);}catch(_){}scrubTo(e);});
+lanesEl.addEventListener('pointermove',e=>{if(scrubbing)scrubTo(e);});
+['pointerup','pointercancel'].forEach(n=>lanesEl.addEventListener(n,()=>{scrubbing=false;}));
+lanesEl.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();e.stopPropagation();playing=false;updateBtn();time=clamp(time+(e.key==='ArrowRight'?.1:-.1),0,cur.dur);dirty=true;}});
+document.addEventListener('keydown',e=>{
+  if(!modalOpen||e.metaKey||e.ctrlKey||e.altKey)return;
+  const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;
+  if(e.key==='Escape'){e.preventDefault();closeModal();}
+  else if(e.key===' '&&!(tg&&tg.tagName==='BUTTON')){e.preventDefault();$('play').click();}
+  else if(e.key==='ArrowRight'&&tg!==lanesEl){e.preventDefault();step(1);}
+  else if(e.key==='ArrowLeft'&&tg!==lanesEl){e.preventDefault();step(-1);}
+  else if(e.key==='r'||e.key==='R'){$('replay').click();}
+  else if(e.key==='Tab'){const f=[...modal.querySelectorAll('button,[tabindex="0"]')].filter(x=>x.offsetParent);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus();}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus();}}
+});
+window.addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(id&&TECH.some(x=>x.id===id)&&(!modalOpen||!cur||cur.id!==id))openModal(id);});
+if('ResizeObserver' in window)new ResizeObserver(resize).observe(cv);else window.addEventListener('resize',resize);
+resize();
+{const start=location.hash.slice(1);if(start&&TECH.some(x=>x.id===start))openModal(start);}
+requestAnimationFrame(t=>{last=t;tick(t);});
+if(document.fonts&&document.fonts.load){
+  const all=TECH.map(x=>x.ko).join('')+'낮들판밤도시소리장면새소리바람소음초점앞의꽃인물먼배경정지사진장삼각대고정핸드헬드짐벌기울인채더치앵글크기그대로만변함정상속도슬로모션배그래이게나야정방향리버스부드러움뚝뚝리니어이즈인아웃오버슈트바운스스태거숨어있던글자가아래에서올라온다마스크영역말이움직이면메시지가살아난다화면홍길동여행크리에이터강원도원사각형별줌달리위에서본모습옆에서담기는범위팬트럭틸트페데스탈가운데배치분할교차점에리드룸쪽여유공간있음앞이꽉막힘미니어처느낌점처럼머리부터발끝까지허리위가슴얼굴눈만아이레벨쿵와이드가까이동작은이어짐고요한갑자기강렬한장소빠르게느리게음악이브라우저는흐림효과미지원3D장면을불러오지못했어요';
+  Promise.all(['700','600','500'].map(w=>document.fonts.load(`${w} 16px "IBM Plex Sans KR"`,all))).then(()=>{dirty=true;TECH.forEach(x=>{if(x.paused)x.drawn=false;});}).catch(()=>{});
+  document.fonts.load('600 12px "IBM Plex Mono"').then(()=>{dirty=true;}).catch(()=>{});
+}
+})();
+</script>
+
+</body>
+</html>
